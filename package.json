@@ -1,0 +1,58 @@
+{
+    "name": "extend-js",
+    "version": "0.0.7",
+    "description": "ITSA's language extensions",
+    "author": {
+        "name": "Marco Asbreuk",
+        "email": "marco@itsasbreuk.nl"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/itsa/extend-js"
+    },
+    "bugs": {
+        "url": "https://github.com/itsa/extend-js/issues"
+    },
+    "keywords": [
+        "ITSA",
+        "extend",
+        "javascript"
+    ],
+    "main": "extend-js.js",
+    "devDependencies": {
+        "chai": "^1.9.1",
+        "istanbul": "^0.3.0",
+        "jshint": "^2.5.5",
+        "mocha": "^1.21.4"
+    },
+    "engines": {
+        "node": "*"
+    },
+    "scripts": {
+        "pretest": "jshint ./extend-js.js",
+        "test": "mocha tests/*.js  && istanbul cover $(which _mocha) -- tests/*.js",
+        "lint": "jshint ./extend-js.js"
+    },
+    "testling": {
+        "harness": "mocha",
+        "files": "tests/*.js",
+        "browsers": [
+            "ie/6..latest",
+            "chrome/22..latest",
+            "firefox/16..latest",
+            "safari/latest",
+            "opera/11.0..latest",
+            "iphone/6",
+            "ipad/6",
+            "android-browser/latest"
+        ]
+    },
+    "homepage": "http://itsa.github.io",
+    "maintainers": [
+        {
+            "name": "Marco Asbreuk",
+            "email": "marco@itsasbreuk.nl"
+        }
+    ],
+    "license": "New BSD"
+}
