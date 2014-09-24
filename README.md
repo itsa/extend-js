@@ -1,4 +1,1 @@
-extend-js
-=========
-
-JavaScript Language extensions
+For information, api and documentation about this module: visit <b><a href="http://itsa.io">itsa.io</a></b>
