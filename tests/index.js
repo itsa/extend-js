@@ -3,6 +3,7 @@
 var expect = require('chai').expect;
 require("../extend-js");
 
+
 describe('Testing object instance methods', function () {
 	var obj = {a:1, b:2, c:3};
 	it('each', function () {
