@@ -3,6 +3,53 @@
 var expect = require('chai').expect;
 require("../extend-js");
 
+describe('Testing isObject', function () {
+
+	it('object', function () {
+		expect(Object.isObject({})).to.be.true;
+	});
+
+	it('function', function () {
+		expect(Object.isObject(function(){})).to.be.false;
+	});
+
+	it('array', function () {
+		expect(Object.isObject([])).to.be.false;
+	});
+
+	it('regexp', function () {
+		expect(Object.isObject(/^a/)).to.be.false;
+	});
+
+	it('Error', function () {
+		expect(Object.isObject(new Error())).to.be.false;
+	});
+
+	it('Date', function () {
+		expect(Object.isObject(new Date)).to.be.false;
+	});
+
+	it('boolean', function () {
+		expect(Object.isObject(true)).to.be.false;
+	});
+
+	it('number', function () {
+		expect(Object.isObject(1)).to.be.false;
+	});
+
+	it('String', function () {
+		expect(Object.isObject('ITSA')).to.be.false;
+	});
+
+	it('null', function () {
+		expect(Object.isObject(null)).to.be.false;
+	});
+
+	it('undefined', function () {
+		expect(Object.isObject(undefined)).to.be.false;
+	});
+
+});
 
 describe('Testing object instance methods', function () {
 	var obj = {a:1, b:2, c:3};
