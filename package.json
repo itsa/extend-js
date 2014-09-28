@@ -1,5 +1,5 @@
 {
-    "name": "extend-js",
+    "name": "js-ext",
     "version": "0.0.1",
     "description": "ITSA's language extensions",
     "author": {
@@ -8,18 +8,19 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/itsa/extend-js"
+        "url": "https://github.com/itsa/js-ext"
     },
     "bugs": {
-        "url": "https://github.com/itsa/extend-js/issues"
+        "url": "https://github.com/itsa/js-ext/issues"
     },
     "keywords": [
         "ITSA",
         "extend",
         "javascript"
     ],
-    "main": "extend-js.js",
+    "main": "js-ext.js",
     "dependencies": {
+        "polyfill": "itsa/polyfill",
         "ypromise": "^0.2.3"
     },
     "devDependencies": {
@@ -35,9 +36,9 @@
         "node": "*"
     },
     "scripts": {
-        "pretest": "jshint ./extend-js.js",
+        "pretest": "jshint ./js-ext.js",
         "test": "mocha tests/*.js  && istanbul cover $(which _mocha) -- tests/*.js",
-        "lint": "jshint ./extend-js.js"
+        "lint": "jshint ./js-ext.js"
     },
     "testling": {
         "harness": "mocha",

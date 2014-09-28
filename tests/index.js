@@ -1,7 +1,7 @@
 /*global describe, it */
 "use strict";
 var expect = require('chai').expect;
-require("../extend-js");
+require("../js-ext");
 
 describe('Testing isObject', function () {
 
