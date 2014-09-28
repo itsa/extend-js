@@ -1,7 +1,7 @@
 /*global describe, it */
 "use strict";
 require('chai').should();
-var ITSA = require("../extend-js");
+var ITSA = require("../js-ext");
 
 describe('Testing function instance methods', function () {
     var func = function() {

@@ -3,7 +3,7 @@
 var expect = require('chai').expect,
     should = require('chai').should();
 
-require("../extend-js");
+require("../js-ext");
 
 describe('Promise ext', function () {
 
