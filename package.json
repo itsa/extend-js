@@ -30,7 +30,8 @@
         "mocha": "^1.21.4"
     },
     "directories": {
-        "lib": "./lib"
+        "lib": "./lib",
+        "extra": "./extra"
     },
     "engines": {
         "node": "*"
