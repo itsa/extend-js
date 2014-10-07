@@ -20,8 +20,7 @@
     ],
     "main": "js-ext.js",
     "dependencies": {
-        "polyfill": "itsa/polyfill",
-        "ypromise": "^0.2.3"
+        "polyfill": "itsa/polyfill"
     },
     "devDependencies": {
         "chai": "^1.9.1",
