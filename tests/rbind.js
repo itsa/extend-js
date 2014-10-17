@@ -1,4 +1,6 @@
 /*global describe, it */
+/*jshint unused:false */
+
 "use strict";
 require('chai').should();
 var ITSA = require("../js-ext");
