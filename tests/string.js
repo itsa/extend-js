@@ -8,10 +8,6 @@ require("../js-ext");
 
 describe('Testing String', function () {
 
-    // Code to execute before every test.
-    beforeEach(function() {
-    });
-
     it('String.contains', function () {
         expect('Itsa small string'.contains('small')).to.be.true;
         expect('Itsa smallstring'.contains('small')).to.be.true;
