@@ -30,6 +30,18 @@ describe('Testing Array', function () {
         expect(a.contains(null)).to.be.false;
     });
 
+    it('Array.replace', function () {
+        a.replace(3,8);
+        expect(a.length).to.be.eql(5);
+        expect(a.toString()).to.be.eql('1,2,8,4,5');
+    });
+
+    it('Array.replace appended', function () {
+        a.replace(7,8);
+        expect(a.length).to.be.eql(6);
+        expect(a.toString()).to.be.eql('1,2,3,4,5,8');
+    });
+
     it('Array.shuffle', function () {
         var aBefore = a.toString(),
             bBefore = b.toString();
