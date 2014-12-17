@@ -260,7 +260,7 @@ describe('Promise ext', function () {
     });
 
     it('Typeof Promise.finally', function (done) {
-        (Promise.resolve().finally(function() {})===undefined).should.be.true;
+        (Promise.resolve().finally(function() {}) instanceof Promise).should.be.true;
         setTimeout(done, 25);
     });
 

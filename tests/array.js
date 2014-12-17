@@ -79,4 +79,10 @@ describe('Testing Array', function () {
         expect(b[3]).to.be.eql(item5);
     });
 
+    it('Array.deepClone', function () {
+        var cloned = b.deepClone();
+        expect(b).be.eql(cloned);
+        expect(b===cloned).to.be.false;
+    });
+
 });

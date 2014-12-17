@@ -54,7 +54,26 @@ describe('Testing isObject', function () {
 });
 
 describe('Testing object instance methods', function () {
-	var obj = {a:1, b:2, c:3};
+	var obj = {a:1, b:2, c:3},
+	    deepObj = {
+	    	a: 1,
+	    	b: [10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)],
+	    	c: new Date(2015, 2, 1, 12, 30, 0, 0),
+	    	d: {
+	    		d1: 1,
+	    		d2: true,
+	    		d3: 'ITSA modules',
+	    		d4: new Date(2015, 3, 1, 12, 30, 0, 0),
+	    		d5: {
+	    			d51: true
+	    		},
+	    		d6: [
+	    			'more modules'
+	    		]
+	    	},
+	    	e: true,
+	    	f: 'ITSA'
+	    };
 	it('each', function () {
 		var a = '';
 		obj.each(function (value, key) {
@@ -100,6 +119,30 @@ describe('Testing object instance methods', function () {
 		expect(obj.isEmpty()).be.false;
 		expect({}.isEmpty()).be.true;
 	});
+	it('sameValue', function () {
+	    var deepObj2 = {
+	    	a: 1,
+	    	b: [10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)],
+	    	c: new Date(2015, 2, 1, 12, 30, 0, 0),
+	    	d: {
+	    		d1: 1,
+	    		d2: true,
+	    		d3: 'ITSA modules',
+	    		d4: new Date(2015, 3, 1, 12, 30, 0, 0),
+	    		d5: {
+	    			d51: true
+	    		},
+	    		d6: [
+	    			'more modules'
+	    		]
+	    	},
+	    	e: true,
+	    	f: 'ITSA'
+	    };
+		expect(deepObj.sameValue(deepObj2)).to.be.true;
+		deepObj2.d.d1 = 2;
+		expect(deepObj.sameValue(deepObj2)).to.be.false;
+	});
 	it('map', function () {
 		expect(obj.map(function (value, key) {
 			return key + value;
@@ -111,10 +154,50 @@ describe('Testing object instance methods', function () {
 	it('shallowClone', function () {
 		var a = obj.shallowClone();
 		expect(a).be.eql(obj);
+		expect(a===obj).to.be.false;
 		a.a = 42;
 		expect(a).not.be.eql(obj);
 		expect(a.a).be.equal(42);
 		expect(obj.a).be.equal(1);
+	});
+	it('deepClone', function () {
+		var a = deepObj.deepClone();
+		expect(a).be.eql(deepObj);
+		expect(a===deepObj).to.be.false;
+
+		a.a = 42;
+		expect(a.a).be.equal(42);
+		expect(deepObj.a).be.equal(1);
+
+		a.b[0] = 2;
+		a.b[1] = 5;
+		a.b[2] = 20;
+		a.b[3].b1 = false;
+		a.b[4][0] = 'second item';
+		a.b[5] = new Date(2016, 1, 1, 12, 30, 0, 0);
+		expect(a.b).to.be.eql([2, 5, 20, {b1: false}, ['second item'], new Date(2016, 1, 1, 12, 30, 0, 0)]);
+		expect(deepObj.b).to.be.eql([10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]);
+
+		a.c = 'ITSA';
+		expect(a.c).be.equal('ITSA');
+		expect(deepObj.c).to.be.eql(new Date(2015, 2, 1, 12, 30, 0, 0));
+
+		a.e = 'Mod';
+		expect(a.e).be.equal('Mod');
+		expect(deepObj.e).be.equal(true);
+
+		a.d.d1 = 2;
+		a.d.d2 = 3;
+		a.d.d3 = 4;
+		a.d.d4 = 5;
+		a.d.d5.d51 = 6;
+		a.d.d6[0] = 7;
+		expect(a.d).to.be.eql({d1:2, d2:3, d3:4, d4:5, d5: {d51: 6}, d6: [7]});
+		expect(deepObj.d).to.be.eql({d1:1, d2:true, d3:'ITSA modules', d4:new Date(2015, 3, 1, 12, 30, 0, 0), d5: {d51: true}, d6: ['more modules']});
+
+		a.f = 4;
+		expect(a.f).be.equal(4);
+		expect(deepObj.f).be.equal('ITSA');
 	});
 	describe('merge', function () {
 		it('simple', function () {
