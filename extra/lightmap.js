@@ -16,14 +16,15 @@
 
     require('../lib/function.js');
     require('../lib/array.js');
+    require('../lib/object.js');
     require('polyfill/lib/weakmap.js');
 
     var LightMap;
 
     global.LightMap = LightMap = Object.createClass(
         function() {
-            this.protectedProp('_array', []);
-            this.protectedProp('_map', new global.WeakMap());
+            Object.protectedProp(this, '_array', []);
+            Object.protectedProp(this, '_map', new global.WeakMap());
         },
         {
             each: function(fn, context) {
