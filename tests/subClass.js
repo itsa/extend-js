@@ -223,7 +223,8 @@ describe('mergePrototypes', function () {
 
 	});
 });
-describe('patch', function () {
+
+describe('$orig', function () {
 
 	it('existing class, override',  function () {
 		var ClassA = Object.createClass({
@@ -233,11 +234,11 @@ describe('patch', function () {
 				expect(v).eql('ec');
 				return this.b + v;
 			}
-		}).patch({
-			whatever: function(orig, v) {
-				return orig.call(this, v + 'c') + 'd';
+		}).mergePrototypes({
+			whatever: function(v) {
+				return ClassA.$orig.whatever.call(this, v + 'c') + 'd';
 			}
-		});
+		}, true);
 
 
 		var a = new ClassA();
@@ -246,75 +247,133 @@ describe('patch', function () {
 	});
 	it('Two level inheritance each with plugin', function () {
 		var ClassA = Object.createClass({
-			method: function (a) {
+			whatever: function (a) {
 				return a + 'a';
 			}
-		}).patch({
-			method: function (orig, b) {
-				return orig(b) + 'b';
+		}).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
-		});
+		}, true);
 		var ClassB = ClassA.subClass({
-			method: function (c) {
-				return ClassB.$super.method(c) + 'c';
+			whatever: function (c) {
+				return ClassB.$super.whatever(c) + 'c';
 			}
-		}).patch({
-			method: function (orig, d) {
-				return orig(d) + 'd';
+		}).mergePrototypes({
+			whatever: function (d) {
+				return ClassB.$orig.whatever.call(this, d) + 'd';
 			}
-		});
+		}, true);
 
 		var b = new ClassB();
-		expect(b.method('0')).eql('0abcd');
+		expect(b.whatever('0')).eql('0abcd');
 		var a = new ClassA();
-		expect(a.method('1')).eql('1ab');
+		expect(a.whatever('1')).eql('1ab');
 	});
 	it('Two level inheritance each with two plugins each', function () {
 		var ClassA = Object.createClass({
-			method: function (a) {
+			whatever: function (a) {
 				return a + 'a';
 			}
-		}).patch({
-			method: function (orig, b) {
-				return orig(b) + 'b';
+		}).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
-		}).patch({
-			method: function (orig, b) {
-				return orig(b) + 'B';
+		}, true).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'B';
 			}
-		});
+		}, true);
 		var ClassB = ClassA.subClass({
-			method: function (c) {
-				return ClassB.$super.method(c) + 'c';
+			whatever: function (c) {
+				return ClassB.$super.whatever(c) + 'c';
 			}
-		}).patch({
-			method: function (orig, d) {
-				return orig(d) + 'd';
+		}).mergePrototypes({
+			whatever: function (d) {
+				return ClassB.$orig.whatever.call(this, d) + 'd';
 			}
-		}).patch({
-			method: function (orig, d) {
-				return orig(d) + 'D';
+		}, true).mergePrototypes({
+			whatever: function (d) {
+				return ClassB.$orig.whatever.call(this, d) + 'D';
 			}
-		});
+		}, true);
 
 		var b = new ClassB();
-		expect(b.method('0')).eql('0abBcdD');
+		expect(b.whatever('0')).eql('0abBcdD');
 		var a = new ClassA();
-		expect(a.method('1')).eql('1abB');
+		expect(a.whatever('1')).eql('1abB');
 	});
 	it('orig present even if no original', function (){
 		var ClassA = Object.createClass({
-		}).patch({
-			method: function (orig, b) {
-				return orig(b) + 'b';
+		}).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
-		}).patch({
-			method: function (orig, b) {
-				return orig(b) + 'B';
-			}
-		});
+		}, true);
 		var a = new ClassA();
-		expect(a.method('1')).eql('undefinedbB');
+		expect(a.whatever('1')).eql('undefinedb');
+	});
+	it('orig present even if no original two levels deep', function (){
+		var ClassA = Object.createClass({
+		}).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'b';
+			}
+		}, true).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'B';
+			}
+		}, true);
+		var a = new ClassA();
+		expect(a.whatever('1')).eql('undefinedbB');
+	});
+
+	it('orig present even if no original two levels deep, multiple methods', function (){
+		var ClassA = Object.createClass({
+		}).mergePrototypes({
+			dummy1: function() {
+				return 'dummy1 returnvalue';
+			},
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'b';
+			},
+			dummy2: function() {
+				return 'dummy2 returnvalue';
+			}
+		}, true).mergePrototypes({
+			dummy3: function() {
+				return 'dummy3 returnvalue';
+			},
+			dummy4: function() {
+				return 'dummy4 returnvalue';
+			},
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'B';
+			},
+			dummy5: function() {
+				return 'dummy5 returnvalue';
+			},
+			dummy6: function() {
+				return 'dummy6 returnvalue';
+			}
+		}, true);
+		var a = new ClassA();
+		expect(a.whatever('1')).eql('undefinedbB');
+	});
+
+	it('orig present even if no original', function (){
+		var ClassA = Object.createClass({
+		}).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'b';
+			}
+		}, true).mergePrototypes({
+			whatever: function (b) {
+				return ClassA.$orig.whatever.call(this, b) + 'B';
+			}
+		}, true);
+		var a = new ClassA();
+		expect(a.whatever('1')).eql('undefinedbB');
 	});
 
 });
