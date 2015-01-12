@@ -99,7 +99,7 @@ describe('With no constructor:', function () {
 					return v * v;
 				},
 				times4: function (v) {
-					return Q.$super.twice(Q.$super.twice(v));
+					return Q.$super.twice.call(this, Q.$super.twice.call(this, v));
 				}
 			}),
 			q = new Q();
@@ -157,9 +157,10 @@ describe('Multiple levels', function () {
 		// Later classes should not interfer with the previous
 		var a = new A(3);
 		expect(a.a).eql(3);
-		expect(a.b).undefined;
+        expect(a.b===undefined).to.be.true;
 		a.add(2);
 		expect(a.a).eql(5);
+		expect(b.a).eql(7);
 	});
 	it ('three levels', function () {
 		var c = new C(3);
@@ -176,14 +177,17 @@ describe('Multiple levels', function () {
 		expect(b.c).undefined;
 		b.add(2);
 		expect(b.a).eql(7);
+		expect(c.a).eql(15);
 
 		// Later classes should not interfer with the previous
 		var a = new A(3);
 		expect(a.a).eql(3);
-		expect(a.b).undefined;
-		expect(a.c).undefined;
+        expect(a.b===undefined).to.be.true;
+        expect(a.c===undefined).to.be.true;
 		a.add(2);
 		expect(a.a).eql(5);
+		expect(b.a).eql(7);
+		expect(c.a).eql(15);
 	});
 });
 describe('mergePrototypes', function () {
@@ -257,7 +261,7 @@ describe('$orig', function () {
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return ClassB.$super.whatever(c) + 'c';
+				return ClassB.$super.whatever.call(this, c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
@@ -286,7 +290,7 @@ describe('$orig', function () {
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return ClassB.$super.whatever(c) + 'c';
+				return ClassB.$super.whatever.call(this, c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
