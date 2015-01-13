@@ -28,7 +28,8 @@
                 Object.protectedProp(this, '_map', new global.WeakMap());
             },
             {
-                each: function(fn, context) {
+                // DO NOT use `each` for it seems to run Object.each!
+                forEach: function(fn, context) {
                     var instance = this,
                         array = instance._array,
                         l = array.length,
@@ -41,7 +42,8 @@
                     }
                     return instance;
                 },
-                some: function(fn, context) {
+                // DO NOT use `some` for it seems to run Object.some!
+                forSome: function(fn, context) {
                     var instance = this,
                         array = instance._array,
                         l = array.length,
@@ -77,6 +79,10 @@
                     map.set(key, value);
                     array.contains(key) || array.push(key);
                     return instance;
+                },
+                // DO NOT use `size` for it seems to run Object.size!
+                mapSize: function (key, value) {
+                    return this._array.length;
                 },
                 'delete': function (key) {
                     var instance = this,
