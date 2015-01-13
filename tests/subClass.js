@@ -190,6 +190,42 @@ describe('Multiple levels', function () {
 		expect(c.a).eql(15);
 	});
 });
+
+describe('Overriding Object-members', function () {
+	it('could not be defined during initialisation', function () {
+		var A = Object.createClass({
+			size: function() {
+				return 100;
+			}
+		});
+		var a = new A();
+		expect(a.size()).be.equal(0);
+	});
+	it('could not be defined through mergePrototypes', function () {
+		var A = Object.createClass().mergePrototypes({
+			size: function() {
+				return 100;
+			}
+		}, true);
+		var a = new A();
+		expect(a.size()).be.equal(0);
+	});
+	it('could not be defined through mergePrototypes', function () {
+		var A = Object.createClass({
+			size: function() {
+				return 10;
+			}
+		});
+		var B = A.subClass().mergePrototypes({
+			size: function() {
+				return 100;
+			}
+		}, true);
+		var b = new B();
+		expect(b.size()).be.equal(0);
+	});
+});
+
 describe('mergePrototypes', function () {
 	var obj = {a:1, b:2, c:3};
 	it('new empty class', function () {
@@ -365,19 +401,71 @@ describe('$orig', function () {
 		expect(a.whatever('1')).eql('undefinedbB');
 	});
 
-	it('orig present even if no original', function (){
-		var ClassA = Object.createClass({
-		}).mergePrototypes({
-			whatever: function (b) {
-				return ClassA.$orig.whatever.call(this, b) + 'b';
+});
+
+describe('Destruction', function () {
+
+	it('calling Destroy', function (){
+		var ClassA = Object.createClass(function() {
+			this.x = 10;
+		}, {
+			destroy: function() {
+				expect(this.x).to.be.equal(10);
+				this.x = 1;
 			}
-		}, true).mergePrototypes({
-			whatever: function (b) {
-				return ClassA.$orig.whatever.call(this, b) + 'B';
-			}
-		}, true);
+		});
 		var a = new ClassA();
-		expect(a.whatever('1')).eql('undefinedbB');
+		expect(a.x).to.be.equal(10);
+		a.destroy();
+		expect(a.x).to.be.equal(1);
+	});
+
+	it('calling Destroy 2 level', function (){
+		var ClassA = Object.createClass({
+			destroy: function() {
+				expect(this.x).to.be.equal(5);
+				this.x = 1;
+			}
+		});
+		var ClassB = ClassA.subClass(function() {
+			this.x = 10;
+		}, {
+			destroy: function() {
+				expect(this.x).to.be.equal(10);
+				this.x = 5;
+			}
+		});
+		var b = new ClassB();
+		expect(b.x).to.be.equal(10);
+		b.destroy();
+		expect(b.x).to.be.equal(1);
+	});
+
+	it('calling Destroy 3 level', function (){
+		var ClassA = Object.createClass({
+			destroy: function() {
+				expect(this.x).to.be.equal(2);
+				this.x = 1;
+			}
+		});
+		var ClassB = ClassA.subClass({
+			destroy: function() {
+				expect(this.x).to.be.equal(5);
+				this.x = 2;
+			}
+		});
+		var ClassC = ClassB.subClass(function() {
+			this.x = 10;
+		}, {
+			destroy: function() {
+				expect(this.x).to.be.equal(10);
+				this.x = 5;
+			}
+		});
+		var c = new ClassC();
+		expect(c.x).to.be.equal(10);
+		c.destroy();
+		expect(c.x).to.be.equal(1);
 	});
 
 });
