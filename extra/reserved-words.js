@@ -1,4 +1,8 @@
-module.exports = {
+"use strict";
+
+var createHashMap = require('./hashmap.js').createMap;
+
+module.exports = createHashMap({
     'abstract': true,
     'arguments': true,
     'assert': true,
@@ -65,4 +69,4 @@ module.exports = {
     'while': true,
     'with': true,
     'yield': true
-};
+});

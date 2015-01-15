@@ -2,13 +2,20 @@
 /*jshint unused:false */
 
 "use strict";
-var expect = require('chai').expect;
+
+var expect = require('chai').expect,
+    Classes = require("../extra/classes.js");
+
 require("../js-ext");
 
 describe('Testing isObject', function () {
 
 	it('object', function () {
 		expect(Object.isObject({})).to.be.true;
+	});
+
+	it('Object.create(null)', function () {
+		expect(Object.isObject(Object.create(null))).to.be.true;
 	});
 
 	it('function', function () {
@@ -82,7 +89,7 @@ describe('Testing object instance methods', function () {
 		expect(a).be.equal('1a2b3c');
 	});
 	it('each w/ context', function () {
-		var A = Object.createClass(function() {
+		var A = Classes.createClass(function() {
 			this.count = 0;
 		},{
 			go: function () {
@@ -212,7 +219,7 @@ describe('Testing object instance methods', function () {
 		});
 		it('existing, forced',  function () {
 			var a = {b:42};
-			a.merge(obj, true);
+			a.merge(obj, {force: true});
 			expect(a).be.eql(obj);
 		});
 		it('undefined source', function () {
@@ -233,4 +240,365 @@ describe('Testing object instance methods', function () {
 			expect(Object.merge(undefined,{a:1,b:2})).be.eql({a:1,b:2});
 		});
 	});
+});
+
+describe('Testing object merge methods with descriptors', function () {
+
+	describe('enabled merge descriptors', function () {
+		var obj = {a:1, b:2, c:3},
+		    deepObj = Object.create({}, {
+		    	a: {
+		    		value: 1
+		    	},
+		    	b: {
+		    		value: [10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]
+		    	},
+		    	c: {
+			    	value: new Date(2015, 2, 1, 12, 30, 0, 0)
+		    	},
+		    	d: {
+		    		value: {
+			    		d1: 1,
+			    		d2: true,
+			    		d3: 'ITSA modules',
+			    		d4: new Date(2015, 3, 1, 12, 30, 0, 0),
+			    		d5: {
+			    			d51: true
+			    		},
+			    		d6: [
+			    			'more modules'
+			    		]
+			    	}
+		    	},
+		    	e: {
+		    		value: true
+		    	},
+		    	f: {
+		    		value: 'ITSA'
+		    	}
+		    }),
+		    deepObjGetters = Object.create({}, {
+		    	a: {
+		    		value: 1
+		    	},
+		    	b: {
+		    		value: [10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]
+		    	},
+		    	c: {
+			    	value: new Date(2015, 2, 1, 12, 30, 0, 0)
+		    	},
+		    	d: {
+		    		value: {
+			    		d1: 1,
+			    		d2: true,
+			    		d3: 'ITSA modules',
+			    		d4: new Date(2015, 3, 1, 12, 30, 0, 0),
+			    		d5: {
+			    			d51: true
+			    		},
+			    		d6: [
+			    			'more modules'
+			    		]
+			    	}
+		    	},
+		    	e: {
+		    		value: true
+		    	},
+		    	f: {
+		    		value: 'ITSA'
+		    	}
+		    });
+
+		it('shallowClone', function () {
+			var a = obj.shallowClone(true);
+			expect(a).be.eql(obj);
+			expect(a===obj).to.be.false;
+			a.a = 42;
+			expect(a).not.be.eql(obj);
+			expect(a.a).be.equal(42);
+			expect(obj.a).be.equal(1);
+		});
+		it('deepClone', function () {
+			var a = deepObj.deepClone(true);
+			// with propertydescriptors, cloned objects cannot equal exactly:
+			expect(a).not.be.eql(deepObj);
+			expect(a===deepObj).to.be.false;
+
+			a.a = 42;
+			expect(a.a).be.equal(42);
+			expect(deepObj.a).be.equal(1);
+
+			a.b[0] = 2;
+			a.b[1] = 5;
+			a.b[2] = 20;
+			a.b[3].b1 = false;
+			a.b[4][0] = 'second item';
+			a.b[5] = new Date(2016, 1, 1, 12, 30, 0, 0);
+			expect(a.b).to.be.eql([2, 5, 20, {b1: false}, ['second item'], new Date(2016, 1, 1, 12, 30, 0, 0)]);
+			expect(deepObj.b).to.be.eql([10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]);
+
+			a.c = 'ITSA';
+			expect(a.c).be.equal('ITSA');
+			expect(deepObj.c).to.be.eql(new Date(2015, 2, 1, 12, 30, 0, 0));
+
+			a.e = 'Mod';
+			expect(a.e).be.equal('Mod');
+			expect(deepObj.e).be.equal(true);
+
+			a.d.d1 = 2;
+			a.d.d2 = 3;
+			a.d.d3 = 4;
+			a.d.d4 = 5;
+			a.d.d5.d51 = 6;
+			a.d.d6[0] = 7;
+			expect(a.d).to.be.eql({d1:2, d2:3, d3:4, d4:5, d5: {d51: 6}, d6: [7]});
+			expect(deepObj.d).to.be.eql({d1:1, d2:true, d3:'ITSA modules', d4:new Date(2015, 3, 1, 12, 30, 0, 0), d5: {d51: true}, d6: ['more modules']});
+
+			a.f = 4;
+			expect(a.f).be.equal(4);
+			expect(deepObj.f).be.equal('ITSA');
+		});
+		it('deepClone with getters', function () {
+			var a = deepObjGetters.deepClone(true);
+			// with propertydescriptors, cloned objects cannot equal exactly:
+			expect(a).not.be.eql(deepObj);
+			expect(a===deepObj).to.be.false;
+
+			a.a = 42;
+			expect(a.a).be.equal(42);
+			expect(deepObj.a).be.equal(1);
+
+			a.b[0] = 2;
+			a.b[1] = 5;
+			a.b[2] = 20;
+			a.b[3].b1 = false;
+			a.b[4][0] = 'second item';
+			a.b[5] = new Date(2016, 1, 1, 12, 30, 0, 0);
+			expect(a.b).to.be.eql([2, 5, 20, {b1: false}, ['second item'], new Date(2016, 1, 1, 12, 30, 0, 0)]);
+			expect(deepObj.b).to.be.eql([10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]);
+
+			a.c = 'ITSA';
+			expect(a.c).be.equal('ITSA');
+			expect(deepObj.c).to.be.eql(new Date(2015, 2, 1, 12, 30, 0, 0));
+
+			a.e = 'Mod';
+			expect(a.e).be.equal('Mod');
+			expect(deepObj.e).be.equal(true);
+
+			a.d.d1 = 2;
+			a.d.d2 = 3;
+			a.d.d3 = 4;
+			a.d.d4 = 5;
+			a.d.d5.d51 = 6;
+			a.d.d6[0] = 7;
+			expect(a.d).to.be.eql({d1:2, d2:3, d3:4, d4:5, d5: {d51: 6}, d6: [7]});
+			expect(deepObj.d).to.be.eql({d1:1, d2:true, d3:'ITSA modules', d4:new Date(2015, 3, 1, 12, 30, 0, 0), d5: {d51: true}, d6: ['more modules']});
+
+			a.f = 4;
+			expect(a.f).be.equal(4);
+			expect(deepObj.f).be.equal('ITSA');
+		});
+		describe('merge', function () {
+			it('simple', function () {
+				var a = {};
+				expect(a.merge(obj, {descriptors: true})).be.eql(obj);
+				expect(a).be.eql(obj);
+			});
+			it('existing, not forced',  function () {
+				var a = {b:42};
+				a.merge(obj, {descriptors: true});
+				expect(a).be.eql({a:1,b:42,c:3});
+			});
+			it('existing, forced',  function () {
+				var a = {b:42};
+				a.merge(obj, {force: true, descriptors: true});
+				expect(a).be.eql(obj);
+			});
+			it('undefined source', function () {
+				var a = {b:42};
+				a.merge(undefined, {descriptors: true});
+				expect(a).eql({b:42});
+			});
+
+		});
+	});
+
+	describe('disabled merge descriptors', function () {
+		var obj = {a:1, b:2, c:3},
+		    deepObj = Object.create({}, {
+		    	a: {
+		    		value: 1
+		    	},
+		    	b: {
+		    		value: [10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]
+		    	},
+		    	c: {
+			    	value: new Date(2015, 2, 1, 12, 30, 0, 0)
+		    	},
+		    	d: {
+		    		value: {
+			    		d1: 1,
+			    		d2: true,
+			    		d3: 'ITSA modules',
+			    		d4: new Date(2015, 3, 1, 12, 30, 0, 0),
+			    		d5: {
+			    			d51: true
+			    		},
+			    		d6: [
+			    			'more modules'
+			    		]
+			    	}
+		    	},
+		    	e: {
+		    		value: true
+		    	},
+		    	f: {
+		    		value: 'ITSA'
+		    	}
+		    }),
+		    deepObjGetters = Object.create({}, {
+		    	a: {
+		    		value: 1
+		    	},
+		    	b: {
+		    		value: [10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]
+		    	},
+		    	c: {
+			    	value: new Date(2015, 2, 1, 12, 30, 0, 0)
+		    	},
+		    	d: {
+		    		value: {
+			    		d1: 1,
+			    		d2: true,
+			    		d3: 'ITSA modules',
+			    		d4: new Date(2015, 3, 1, 12, 30, 0, 0),
+			    		d5: {
+			    			d51: true
+			    		},
+			    		d6: [
+			    			'more modules'
+			    		]
+			    	}
+		    	},
+		    	e: {
+		    		value: true
+		    	},
+		    	f: {
+		    		value: 'ITSA'
+		    	}
+		    });
+		it('shallowClone', function () {
+			var a = obj.shallowClone();
+			expect(a).be.eql(obj);
+			expect(a===obj).to.be.false;
+			a.a = 42;
+			expect(a).not.be.eql(obj);
+			expect(a.a).be.equal(42);
+			expect(obj.a).be.equal(1);
+		});
+		it('deepClone', function () {
+			var a = deepObj.deepClone();
+			// with propertydescriptors, cloned objects cannot equal exactly:
+			expect(a).not.be.eql(deepObj);
+			expect(a===deepObj).to.be.false;
+
+			a.a = 42;
+			expect(a.a).be.equal(42);
+			expect(deepObj.a).be.equal(1);
+
+			a.b[0] = 2;
+			a.b[1] = 5;
+			a.b[2] = 20;
+			a.b[3].b1 = false;
+			a.b[4][0] = 'second item';
+			a.b[5] = new Date(2016, 1, 1, 12, 30, 0, 0);
+			expect(a.b).to.be.eql([2, 5, 20, {b1: false}, ['second item'], new Date(2016, 1, 1, 12, 30, 0, 0)]);
+			expect(deepObj.b).to.be.eql([10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]);
+
+			a.c = 'ITSA';
+			expect(a.c).be.equal('ITSA');
+			expect(deepObj.c).to.be.eql(new Date(2015, 2, 1, 12, 30, 0, 0));
+
+			a.e = 'Mod';
+			expect(a.e).be.equal('Mod');
+			expect(deepObj.e).be.equal(true);
+
+			a.d.d1 = 2;
+			a.d.d2 = 3;
+			a.d.d3 = 4;
+			a.d.d4 = 5;
+			a.d.d5.d51 = 6;
+			a.d.d6[0] = 7;
+			expect(a.d).to.be.eql({d1:2, d2:3, d3:4, d4:5, d5: {d51: 6}, d6: [7]});
+			expect(deepObj.d).to.be.eql({d1:1, d2:true, d3:'ITSA modules', d4:new Date(2015, 3, 1, 12, 30, 0, 0), d5: {d51: true}, d6: ['more modules']});
+
+			a.f = 4;
+			expect(a.f).be.equal(4);
+			expect(deepObj.f).be.equal('ITSA');
+		});
+		it('deepClone with getters', function () {
+			var a = deepObjGetters.deepClone();
+			// with propertydescriptors, cloned objects cannot equal exactly:
+			expect(a).not.be.eql(deepObj);
+			expect(a===deepObj).to.be.false;
+
+			a.a = 42;
+			expect(a.a).be.equal(42);
+			expect(deepObj.a).be.equal(1);
+
+			a.b[0] = 2;
+			a.b[1] = 5;
+			a.b[2] = 20;
+			a.b[3].b1 = false;
+			a.b[4][0] = 'second item';
+			a.b[5] = new Date(2016, 1, 1, 12, 30, 0, 0);
+			expect(a.b).to.be.eql([2, 5, 20, {b1: false}, ['second item'], new Date(2016, 1, 1, 12, 30, 0, 0)]);
+			expect(deepObj.b).to.be.eql([10, true, 'Modules', {b1: true}, ['first item'], new Date(2015, 1, 1, 12, 30, 0, 0)]);
+
+			a.c = 'ITSA';
+			expect(a.c).be.equal('ITSA');
+			expect(deepObj.c).to.be.eql(new Date(2015, 2, 1, 12, 30, 0, 0));
+
+			a.e = 'Mod';
+			expect(a.e).be.equal('Mod');
+			expect(deepObj.e).be.equal(true);
+
+			a.d.d1 = 2;
+			a.d.d2 = 3;
+			a.d.d3 = 4;
+			a.d.d4 = 5;
+			a.d.d5.d51 = 6;
+			a.d.d6[0] = 7;
+			expect(a.d).to.be.eql({d1:2, d2:3, d3:4, d4:5, d5: {d51: 6}, d6: [7]});
+			expect(deepObj.d).to.be.eql({d1:1, d2:true, d3:'ITSA modules', d4:new Date(2015, 3, 1, 12, 30, 0, 0), d5: {d51: true}, d6: ['more modules']});
+
+			a.f = 4;
+			expect(a.f).be.equal(4);
+			expect(deepObj.f).be.equal('ITSA');
+		});
+		describe('merge', function () {
+			it('simple', function () {
+				var a = {};
+				expect(a.merge(obj)).be.eql(obj);
+				expect(a).be.eql(obj);
+			});
+			it('existing, not forced',  function () {
+				var a = {b:42};
+				a.merge(obj);
+				expect(a).be.eql({a:1,b:42,c:3});
+			});
+			it('existing, forced',  function () {
+				var a = {b:42};
+				a.merge(obj, {force: true});
+				expect(a).be.eql(obj);
+			});
+			it('undefined source', function () {
+				var a = {b:42};
+				a.merge(undefined);
+				expect(a).eql({b:42});
+			});
+
+		});
+	});
+
 });

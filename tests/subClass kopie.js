@@ -32,7 +32,7 @@ var Shape = Classes.createClass(function (x, y) {
 var Circle = Shape.subClass(
 	function (x, y, r) {
 		this.r = r || 1;
-		this.$super.constructor(x, y);
+		Circle.$super.constructor.call(this, x, y);
 	},{
 		area: function () {
 			return this.r * this.r * Math.PI;
@@ -104,7 +104,7 @@ describe('With no constructor:', function () {
 					return v * v;
 				},
 				times4: function (v) {
-					return this.$super.twice(this.$super.twice(v));
+					return Q.$super.twice.call(this, Q.$super.twice.call(this, v));
 				}
 			}),
 			q = new Q();
@@ -126,22 +126,22 @@ describe('Multiple levels', function () {
 	var B = A.subClass(
 		function (b) {
 			this.b = b;
-			this.$super.constructor(b);
+			B.$super.constructor.call(this, b);
 		},
 		{
 			add: function (c) {
-				this.$super.add(c * 2);
+				B.$super.add.call(this, c * 2);
 			}
 		}
 	);
 	var C = B.subClass(
 		function (c) {
 			this.c = c;
-			this.$super.constructor(c);
+			C.$super.constructor.call(this, c);
 		},
 		{
 			add: function (c) {
-				this.$super.add(c * 3);
+				C.$super.add.call(this, c * 3);
 			}
 		}
 	);
@@ -193,31 +193,6 @@ describe('Multiple levels', function () {
 		expect(a.a).eql(5);
 		expect(b.a).eql(7);
 		expect(c.a).eql(15);
-	});
-});
-
-describe('Three levels with no constructor:', function () {
-	var P = Classes.createClass({
-			twice: function (v) {
-				return 2 * v;
-			}
-		});
-	it('base class', function () {
-		var p = new P();
-		expect(p.twice(3)).eql(6);
-	});
-	it('inherited class', function () {
-		var Q = P.subClass({
-				square: function (v) {
-					return v * v;
-				},
-				times4: function (v) {
-					return this.$super.twice(this.$super.twice(v));
-				}
-			}),
-			q = new Q();
-		expect(q.square(5)).eql(25);
-		expect(q.times4(4)).eql(16);
 	});
 });
 
@@ -357,7 +332,7 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function(v) {
-				return this.$orig.whatever(v + 'c') + 'd';
+				return ClassA.$orig.whatever.call(this, v + 'c') + 'd';
 			}
 		}, true);
 
@@ -373,16 +348,16 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return ClassB.$super.whatever.call(this, c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return ClassB.$orig.whatever.call(this, d) + 'd';
 			}
 		}, true);
 
@@ -398,24 +373,24 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
 		}, true).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return ClassA.$orig.whatever.call(this, b) + 'B';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return ClassB.$super.whatever.call(this, c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return ClassB.$orig.whatever.call(this, d) + 'd';
 			}
 		}, true).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'D';
+				return ClassB.$orig.whatever.call(this, d) + 'D';
 			}
 		}, true);
 
@@ -431,16 +406,16 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return ClassB.$super.whatever.call(this, c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return ClassB.$orig.whatever.call(this, d) + 'd';
 			}
 		}, true);
 
@@ -456,24 +431,24 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
 		}, true).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return ClassA.$orig.whatever.call(this, b) + 'B';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return ClassB.$super.whatever.call(this, c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return ClassB.$orig.whatever.call(this, d) + 'd';
 			}
 		}, true).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'D';
+				return ClassB.$orig.whatever.call(this, d) + 'D';
 			}
 		}, true);
 
@@ -486,7 +461,7 @@ describe('$orig', function () {
 		var ClassA = Classes.createClass({
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
 		}, true);
 		var a = new ClassA();
@@ -496,11 +471,11 @@ describe('$orig', function () {
 		var ClassA = Classes.createClass({
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			}
 		}, true).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return ClassA.$orig.whatever.call(this, b) + 'B';
 			}
 		}, true);
 		var a = new ClassA();
@@ -514,7 +489,7 @@ describe('$orig', function () {
 				return 'dummy1 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			},
 			dummy2: function() {
 				return 'dummy2 returnvalue';
@@ -527,7 +502,7 @@ describe('$orig', function () {
 				return 'dummy4 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return ClassA.$orig.whatever.call(this, b) + 'B';
 			},
 			dummy5: function() {
 				return 'dummy5 returnvalue';
@@ -547,7 +522,7 @@ describe('$orig', function () {
 				return 'dummy1 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return ClassA.$orig.whatever.call(this, b) + 'b';
 			},
 			dummy2: function() {
 				return 'dummy2 returnvalue';
@@ -560,7 +535,7 @@ describe('$orig', function () {
 				return 'dummy4 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return ClassA.$orig.whatever.call(this, b) + 'B';
 			},
 			dummy5: function() {
 				return 'dummy5 returnvalue';
