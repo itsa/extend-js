@@ -22,7 +22,7 @@ require('../lib/object.js');
         createHashMap = require('js-ext/extra/hashmap.js').createMap,
         DEFAULT_CHAIN_CONSTRUCT, defineProperty, defineProperties,
         NOOP, REPLACE_CLASS_METHODS, PROTECTED_CLASS_METHODS, PROTO_RESERVERD_NAMES,
-        BASE_MEMBERS, createBaseClass, Classes;
+        BASE_MEMBERS, createBaseClass, Classes, coreMethods;
 
     global._ITSAmodules || Object.protectedProp(global, '_ITSAmodules', createHashMap());
 
@@ -62,6 +62,7 @@ require('../lib/object.js');
     PROTECTED_CLASS_METHODS = createHashMap({
         _destroy: true,
         $super: true,
+        $superProp: true,
         $orig: true
     });
 /*jshint proto:true */
@@ -96,7 +97,9 @@ require('../lib/object.js');
 
         /**
          * Merges the given map of properties into the `prototype` of the Class.
-         * **Not** to be used on instances.
+         *
+         * **Note1 ** to be used on instances --> ONLY on Classes
+         * **Note2 ** properties with getters and/or unwritable will NOT be merged
          *
          * The members in the hash map will become members with
          * instances of the merged class.
@@ -114,8 +117,8 @@ require('../lib/object.js');
             if (!map) {
                 return;
             }
-            instance = this;
-            proto = instance.isItag ? instance.$proto : instance.prototype;
+            instance = this; // the Class
+            proto = instance.prototype;
             names = Object.getOwnPropertyNames(map);
             l = names.length;
             i = -1;
@@ -130,17 +133,54 @@ require('../lib/object.js');
 
 
 
+                    propDescriptor = Object.getOwnPropertyDescriptor(map, name);
+                    if (!propDescriptor.writable) {
+                        console.warn(NAME+'mergePrototypes will set property of '+NAME+'without its property-descriptor: for it is an unwritable property.');
+                        proto[finalName] = map[name];
+                    }
+                    else {
 
-                propDescriptor = Object.getOwnPropertyDescriptor(map, name);
-                if (propDescriptor.writable===false) {
-                    proto[name] = map[name];
-                    console.warn(NAME+'mergePrototypes will set '+name+' without descriptors, for it is an unwritable property');
-                    console.warn(map[name]);
-                }
-                else {
-                    Object.defineProperty(proto, finalName, propDescriptor);
-                }
+                        // adding map[name] into $$orig:
 
+                        instance.$$orig[finalName] || (instance.$$orig[finalName]=[]);
+                        instance.$$orig[finalName][instance.$$orig[finalName].length] = map[name];
+
+
+
+                        if (typeof map[name] === 'function') {
+        /*jshint -W083 */
+                            propDescriptor.value = (function (originalMethodName, finalMethodName) {
+                                return function () {
+        /*jshint +W083 */
+                                    // this.$own = prot;
+                                    // this.$origMethods = instance.$$orig[finalMethodName];
+                                    var context = this,
+                                        classCarierBkp = context.__classCarier__,
+                                        methodClassCarierBkp = context.__methodClassCarier__,
+                                        origPropBkp = context.__origProp__,
+                                        returnValue;
+
+                                    context.__methodClassCarier__ = instance;
+
+                                    context.__classCarier__ = null;
+
+                                    context.__origProp__ = finalMethodName;
+                                    returnValue = map[originalMethodName].apply(context, arguments);
+                                    context.__origProp__ = origPropBkp;
+
+                                    context.__classCarier__ = classCarierBkp;
+
+                                    context.__methodClassCarier__ = methodClassCarierBkp;
+
+                                    return returnValue;
+
+                                };
+                            })(name, finalName);
+                        }
+
+
+                        Object.defineProperty(proto, finalName, propDescriptor);
+                    }
 
 
 
@@ -168,6 +208,32 @@ require('../lib/object.js');
                 }
             }
             return instance;
+        },
+
+        /**
+         * Merges the given map of properties into the `prototype` of the Class.
+         *
+         * **Note1 ** to be used on instances --> ONLY on Classes
+         * **Note2 ** properties with getters and/or unwritable will NOT be merged
+         *
+         * The members in the hash map will become members with
+         * instances of the merged class.
+         *
+         * By default, this method will not override existing prototype members,
+         * unless the second argument `force` is true.
+         *
+         * @method removePrototypes
+         * @param map {Object} Hash map of properties to add to the prototype of this object
+         * @param force {Boolean}  If true, existing members will be overwritten
+         * @chainable
+         */
+        removePrototypes: function (properties) {
+            var instance = this,
+                proto = instance.isItag ? instance.$proto : instance.prototype;
+            Array.isArray(properties) || (properties=[properties]);
+            properties.forEach(function(prop) {
+                delete proto[prop];
+            });
         },
 
         /**
@@ -203,9 +269,10 @@ require('../lib/object.js');
          * @return the new class.
          */
         subClass: function (constructor, prototypes, chainConstruct) {
+
             var instance = this,
                 constructorClosure = {},
-                baseProt, rp;
+                baseProt, proto;
             if (typeof constructor === 'boolean') {
                 constructor = null;
                 prototypes = null;
@@ -234,7 +301,12 @@ require('../lib/object.js');
                 else {
                     constructor = (function(originalConstructor) {
                         return function() {
-                            constructorClosure.constructor.$$super.constructor.apply(this, arguments);
+                            var context = this;
+
+                            context.__classCarier__ = constructorClosure.constructor;
+                            context.__origProp__ = 'constructor';
+                            originalConstructor.apply(context, arguments);
+
                         };
                     })(instance);
                 }
@@ -242,22 +314,34 @@ require('../lib/object.js');
             if (chainConstruct) {
                 constructor = (function(originalConstructor) {
                     return function() {
-                        constructorClosure.constructor.$$super.constructor.apply(this, arguments);
-                        this.$own = constructorClosure.constructor.prototype;
-                        this.$orig = constructorClosure.constructor.$$orig;
-                        this.$superClass = constructorClosure.constructor.$$super.constructor;
-                        originalConstructor.apply(this, arguments);
+                        var context = this;
+
+                        context.__classCarier__ = constructorClosure.constructor.$$super.constructor;
+
+                        context.__origProp__ = 'constructor';
+                        context.__classCarier__.apply(context, arguments);
+
+                        context.$origMethods = constructorClosure.constructor.$$orig.constructor;
+
+                        context.__classCarier__ = constructorClosure.constructor;
+
+                        context.__origProp__ = 'constructor';
+                        originalConstructor.apply(context, arguments);
+
                     };
                 })(constructor);
             }
 
             baseProt = instance.prototype;
-            rp = Object.create(baseProt);
-            constructor.prototype = rp;
+            proto = Object.create(baseProt);
+            constructor.prototype = proto;
 
-            rp.constructor = constructor;
+            proto.constructor = constructor;
+            constructor.$$chainConstructed = chainConstruct ? true : false;
             constructor.$$super = baseProt;
-            constructor.$$orig = {};
+            constructor.$$orig = {
+                constructor: constructor
+            };
             constructorClosure.constructor = constructor;
             prototypes && constructor.mergePrototypes(prototypes, true);
             return constructor;
@@ -275,6 +359,7 @@ require('../lib/object.js');
                     // don't call `hasOwnProperty` directly on obj --> it might have been overruled
                     Object.prototype.hasOwnProperty.call(constructor.prototype, '_destroy') && constructor.prototype._destroy.call(instance);
                     if (!notChained && constructor.$$super) {
+                        instance.__classCarier__ = constructor.$$super.constructor;
                         superDestroy(constructor.$$super.constructor);
                     }
                 };
@@ -285,37 +370,94 @@ require('../lib/object.js');
         }
     };
 
-    Object.defineProperties(BASE_MEMBERS, {
+    coreMethods = Classes.coreMethods = {
         $super: {
             get: function() {
-                // return this._super2;
-                var superClass = this.$superClass,
-                    superInstance = superClass.prototype;
-                // set $superClass in the instance, to enable going up higher in the hierarchy:
-                superInstance.$superClass = superClass.$$super.constructor;
-                // set superInstance.constructor:
-                // superInstance.constructor = superClass.constructor;
-                return superInstance;
+                var instance = this;
+                instance.__classCarier__ || (instance.__classCarier__= instance.__methodClassCarier__);
+                instance.__$superCarierStart__ || (instance.__$superCarierStart__=instance.__classCarier__);
+                instance.__classCarier__ = instance.__classCarier__.$$super.constructor;
+                return instance;
             }
         },
-        Xsuper: {
-            get: function() {
-                // return this._super2;
-                var superClass = this.$superClass,
-                    superInstance = superClass.prototype,
-                    superInstanceModified, superSuperClass;
-                // adding $super.$super and so on:
-                superInstanceModified = superInstance;
-                superSuperClass = superClass.$$super;
-                while (superSuperClass) {
-                    superInstanceModified.$super = superSuperClass.prototype;
-                    superInstanceModified = superInstanceModified.$super;
-                    superSuperClass = superSuperClass.$$super;
+        $superProp: {
+            value: function(/* func, *args */) {
+                var instance = this,
+                    classCarierReturn = instance.__$superCarierStart__ || instance.__classCarier__ || instance.__methodClassCarier__,
+                    currentClassCarier = instance.__classCarier__ || instance.__methodClassCarier__,
+                    args = arguments,
+                    superClass, superPrototype, firstArg, returnValue;
+
+                instance.__$superCarierStart__ = null;
+                if (args.length === 0) {
+                    instance.__classCarier__ = classCarierReturn;
+                    return;
                 }
-                return superInstance;
+
+                superClass = currentClassCarier.$$super.constructor,
+                superPrototype = superClass.prototype,
+                firstArg = Array.prototype.shift.apply(args); // will decrease the length of args with one
+                if ((firstArg==='constructor') && currentClassCarier.$$chainConstructed) {
+                    console.warn('the constructor of this Class cannot be invoked manually, because it is chainConstructed');
+                    return currentClassCarier;
+                }
+                if (typeof superPrototype[firstArg] === 'function') {
+                    instance.__classCarier__ = superClass;
+                    returnValue = superPrototype[firstArg].apply(instance, args);
+                }
+                instance.__classCarier__ = classCarierReturn;
+                return returnValue || superPrototype[firstArg];
+            }
+        },
+        $orig: {
+            value: function() {
+                var instance = this,
+                    classCarierReturn = instance.__$superCarierStart__,
+                    currentClassCarier = instance.__classCarier__ || instance.__methodClassCarier__,
+                    args = arguments,
+                    propertyName = instance.__origProp__,
+                    returnValue, origArray, orig, item;
+
+                instance.__$superCarierStart__ = null;
+
+                origArray = currentClassCarier.$$orig[propertyName];
+
+                instance.__origPos__ || (instance.__origPos__ = []);
+
+                // every class can have its own overruled $orig for even the same method
+                // first: seek for the item that matches propertyName/classRef:
+                instance.__origPos__.some(function(element) {
+                    if ((element.propertyName===propertyName) && (element.classRef===currentClassCarier)) {
+                        item = element;
+                    }
+                    return item;
+                });
+
+                if (!item) {
+                    item = {
+                        propertyName: propertyName,
+                        classRef: currentClassCarier,
+                        position: origArray.length-1
+                    };
+                    instance.__origPos__.push(item);
+                }
+                if (item.position===0) {
+                    return undefined;
+                }
+                item.position--;
+                orig = origArray[item.position];
+                if (typeof orig === 'function') {
+                    instance.__classCarier__ = currentClassCarier;
+                    returnValue = orig.apply(instance, args);
+                }
+                instance.__classCarier__ = classCarierReturn;
+
+                item.position++;
+
+                return returnValue || orig;
             }
         }
-    });
+    };
 
     createBaseClass = function () {
         var InitClass = function() {};
@@ -335,6 +477,9 @@ require('../lib/object.js');
      * @return {Function} the new class
     */
     Object.protectedProp(Classes, 'BaseClass', createBaseClass().mergePrototypes(BASE_MEMBERS, true, {}, {}));
+
+    // because `mergePrototypes` cannot merge object-getters, we will add the getter `$super` manually:
+    Object.defineProperties(Classes.BaseClass.prototype, coreMethods);
 
     /**
      * Returns a base class with the given constructor and prototype methods

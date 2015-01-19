@@ -32,7 +32,7 @@ var Shape = Classes.createClass(function (x, y) {
 var Circle = Shape.subClass(
 	function (x, y, r) {
 		this.r = r || 1;
-		this.$super.constructor(x, y);
+		this.$superProp('constructor', x, y);
 	},{
 		area: function () {
 			return this.r * this.r * Math.PI;
@@ -104,7 +104,7 @@ describe('With no constructor:', function () {
 					return v * v;
 				},
 				times4: function (v) {
-					return this.$super.twice(this.$super.twice(v));
+					return this.$superProp('twice', this.$superProp('twice', v));
 				}
 			}),
 			q = new Q();
@@ -112,90 +112,94 @@ describe('With no constructor:', function () {
 		expect(q.times4(4)).eql(16);
 	});
 });
-describe('Multiple levels', function () {
-	var A = Classes.createClass(
-		function (a) {
-			this.a = a;
-		},
-		{
-			add: function (b) {
-				this.a += b;
-			}
-		}
-	);
-	var B = A.subClass(
-		function (b) {
-			this.b = b;
-			this.$super.constructor(b);
-		},
-		{
-			add: function (c) {
-				this.$super.add(c * 2);
-			}
-		}
-	);
-	var C = B.subClass(
-		function (c) {
-			this.c = c;
-			this.$super.constructor(c);
-		},
-		{
-			add: function (c) {
-				this.$super.add(c * 3);
-			}
-		}
-	);
-	it ('one level', function () {
-		var a = new A(3);
-		expect(a.a).eql(3);
-		a.add(2);
-		expect(a.a).eql(5);
-	});
-	it ('two levels', function () {
 
-		var b = new B(3);
-		expect(b.a).eql(3);
-		expect(b.b).eql(3);
-		b.add(2);
-		expect(b.a).eql(7);
+    describe('Multiple levels', function () {
+        var A = Classes.createClass(
+            function (a) {
+                this.a = a;
+            },
+            {
+                add: function (b) {
+                    this.a += b;
+                }
+            }
+        );
+        var B = A.subClass(
+            function (b) {
+                this.b = b;
+                this.$superProp('constructor', b);
+            },
+            {
+                add: function (c) {
+                    this.$superProp('add' ,(c * 2));
+                }
+            }
+        );
+        var C = B.subClass(
+            function (c) {
+                this.c = c;
+                this.$superProp('constructor', c);
+            },
+            {
+                add: function (c) {
+                    this.$superProp('add', (c * 3));
+                }
+            }
+        );
 
-		// Later classes should not interfer with the previous
-		var a = new A(3);
-		expect(a.a).eql(3);
-        expect(a.b===undefined).to.be.true;
-		a.add(2);
-		expect(a.a).eql(5);
-		expect(b.a).eql(7);
-	});
-	it ('three levels', function () {
-		var c = new C(3);
-		expect(c.a).eql(3);
-		expect(c.b).eql(3);
-		expect(c.c).eql(3);
-		c.add(2);
-		expect(c.a).eql(15);
+        it ('one level', function () {
+            var a = new A(3);
+            expect(a.a).eql(3);
+            a.add(2);
+            expect(a.a).eql(5);
+        });
 
-		// Later classes should not interfer with the previous
-		var b = new B(3);
-		expect(b.a).eql(3);
-		expect(b.b).eql(3);
-		expect(b.c).undefined;
-		b.add(2);
-		expect(b.a).eql(7);
-		expect(c.a).eql(15);
+        it ('two levels', function () {
 
-		// Later classes should not interfer with the previous
-		var a = new A(3);
-		expect(a.a).eql(3);
-        expect(a.b===undefined).to.be.true;
-        expect(a.c===undefined).to.be.true;
-		a.add(2);
-		expect(a.a).eql(5);
-		expect(b.a).eql(7);
-		expect(c.a).eql(15);
-	});
-});
+            var b = new B(3);
+            expect(b.a).eql(3);
+            expect(b.b).eql(3);
+            b.add(2);
+            expect(b.a).eql(7);
 
+            // Later classes should not interfer with the previous
+            var a = new A(3);
+            expect(a.a).eql(3);
+            expect(a.b===undefined).to.be.true;
+            a.add(2);
+            expect(a.a).eql(5);
+            expect(b.a).eql(7);
+        });
+
+        it ('three levels', function () {
+            var c = new C(3);
+            expect(c.a).eql(3);
+            expect(c.b).eql(3);
+            expect(c.c).eql(3);
+            c.add(2);
+            expect(c.a).eql(15);
+
+            // Later classes should not interfer with the previous
+            var b = new B(3);
+            expect(b.a).eql(3);
+            expect(b.b).eql(3);
+            expect(b.c).undefined;
+            b.add(2);
+            expect(b.a).eql(7);
+            expect(c.a).eql(15);
+
+            // Later classes should not interfer with the previous
+            var a = new A(3);
+            expect(a.a).eql(3);
+            expect(a.b===undefined).to.be.true;
+            expect(a.c===undefined).to.be.true;
+            a.add(2);
+            expect(a.a).eql(5);
+            expect(b.a).eql(7);
+            expect(c.a).eql(15);
+        });
+
+    });
 describe('Three levels with no constructor:', function () {
 	var P = Classes.createClass({
 			twice: function (v) {
@@ -212,7 +216,7 @@ describe('Three levels with no constructor:', function () {
 					return v * v;
 				},
 				times4: function (v) {
-					return this.$super.twice(this.$super.twice(v));
+					return this.$superProp('twice', this.$superProp('twice', v));
 				}
 			}),
 			q = new Q();
@@ -357,7 +361,7 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function(v) {
-				return this.$orig.whatever(v + 'c') + 'd';
+				return this.$orig(v + 'c') + 'd';
 			}
 		}, true);
 
@@ -373,16 +377,16 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return this.$superProp('whatever', c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return this.$orig(d) + 'd';
 			}
 		}, true);
 
@@ -398,24 +402,24 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			}
 		}, true).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return this.$orig(b) + 'B';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return this.$superProp('whatever', c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return this.$orig(d) + 'd';
 			}
 		}, true).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'D';
+				return this.$orig(d) + 'D';
 			}
 		}, true);
 
@@ -431,16 +435,16 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return this.$superProp('whatever', c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return this.$orig(d) + 'd';
 			}
 		}, true);
 
@@ -456,24 +460,24 @@ describe('$orig', function () {
 			}
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			}
 		}, true).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return this.$orig(b) + 'B';
 			}
 		}, true);
 		var ClassB = ClassA.subClass({
 			whatever: function (c) {
-				return this.$super.whatever(c) + 'c';
+				return this.$superProp('whatever', c) + 'c';
 			}
 		}).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'd';
+				return this.$orig(d) + 'd';
 			}
 		}, true).mergePrototypes({
 			whatever: function (d) {
-				return this.$orig.whatever(d) + 'D';
+				return this.$orig(d) + 'D';
 			}
 		}, true);
 
@@ -486,7 +490,7 @@ describe('$orig', function () {
 		var ClassA = Classes.createClass({
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			}
 		}, true);
 		var a = new ClassA();
@@ -496,11 +500,11 @@ describe('$orig', function () {
 		var ClassA = Classes.createClass({
 		}).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			}
 		}, true).mergePrototypes({
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return this.$orig(b) + 'B';
 			}
 		}, true);
 		var a = new ClassA();
@@ -514,7 +518,7 @@ describe('$orig', function () {
 				return 'dummy1 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			},
 			dummy2: function() {
 				return 'dummy2 returnvalue';
@@ -527,7 +531,7 @@ describe('$orig', function () {
 				return 'dummy4 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return this.$orig(b) + 'B';
 			},
 			dummy5: function() {
 				return 'dummy5 returnvalue';
@@ -547,7 +551,7 @@ describe('$orig', function () {
 				return 'dummy1 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'b';
+				return this.$orig(b) + 'b';
 			},
 			dummy2: function() {
 				return 'dummy2 returnvalue';
@@ -560,7 +564,7 @@ describe('$orig', function () {
 				return 'dummy4 returnvalue';
 			},
 			whatever: function (b) {
-				return this.$orig.whatever(b) + 'B';
+				return this.$orig(b) + 'B';
 			},
 			dummy5: function() {
 				return 'dummy5 returnvalue';
@@ -572,6 +576,52 @@ describe('$orig', function () {
 		var a = new ClassA();
 		expect(a.whatever('1')).eql('undefinedbB');
 	});
+
+    it('mergePrototypes with $orig without argument', function() {
+        var A = Classes.createClass(
+            function(x) {
+                this.x = x;
+            },
+            {
+                printValues: function() {
+                    return this.x;
+                }
+            }
+        );
+
+        var a = new A('a');
+
+        A.mergePrototypes({
+            printValues: function() {
+                return 'new '+this.$orig();
+            }
+        }, true);
+
+        expect(a.printValues('b')).to.be.equal('new a');
+    });
+
+    it('mergePrototypes with $orig with argument', function() {
+        var A = Classes.createClass(
+            function(x) {
+                this.x = x;
+            },
+            {
+                printValues: function(v) {
+                    return this.x+v;
+                }
+            }
+        );
+
+        var a = new A('a');
+
+        A.mergePrototypes({
+            printValues: function(v) {
+                return 'new '+this.$orig(v);
+            }
+        }, true);
+
+        expect(a.printValues('b')).to.be.equal('new ab');
+    });
 
 });
 
@@ -782,5 +832,797 @@ describe('Destruction', function () {
 		c.destroy(true);
 		expect(c.x).to.be.equal(5);
 	});
+
+});
+
+
+describe('test $superProp', function () {
+
+    it('Properties should be accessable', function () {
+        var C1 = Classes.createClass({
+            f: function() {
+                return 'F1';
+            },
+            h: function() {
+                return 'H1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            h: function() {
+                return 'H2';
+            },
+            getF: function() {
+                return this.$superProp('f');
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            h: function() {
+                return 'H3';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            h: function() {
+                return 'H4';
+            },
+            a: 4
+        });
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2-error').to.be.equal('F1');
+        expect(c3.getF(), 'c3-error').to.be.equal('F1');
+        expect(c4.getF(), 'c4-error').to.be.equal('F1');
+    });
+
+    it('loop', function () {
+        var C1 = Classes.createClass({
+            f: function() {
+                return this.h();
+            },
+            h: function() {
+                return 'H1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            h: function() {
+                return 'H2';
+            },
+            getF: function() {
+                return this.$superProp('f');
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            h: function() {
+                return 'H3';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            h: function() {
+                return 'H4';
+            },
+            a: 4
+        });
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2-error').to.be.equal('H2');
+        expect(c3.getF(), 'c3-error').to.be.equal('H3');
+        expect(c4.getF(), 'c4-error').to.be.equal('H4');
+    });
+
+    it('loop double', function () {
+        var C1 = Classes.createClass({
+            f: function() {
+                return this.g();
+            },
+            g: function() {
+                return 'G1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            getF: function() {
+                return this.$superProp('f');
+            },
+            g: function() {
+                return 'G2';
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            g: function() {
+                return 'G3';
+            },
+            h: function() {
+                return 'H3-final';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            getF: function() {
+                return this.$superProp('f');
+            },
+            g: function() {
+                return this.$superProp('h');
+            },
+            a: 4
+        });
+        var C5 = C4.subClass();
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        var c5 = new C5();
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2 error').to.be.equal('G2');
+        expect(c3.getF(), 'c3 error').to.be.equal('G3');
+        expect(c4.getF(), 'c4 error').to.be.equal('F3');
+        expect(c5.getF(), 'c5 error').to.be.equal('F3');
+    });
+
+    it('loop with multiple check reset', function () {
+        var C1 = Classes.createClass({
+            f: function() {
+                return this.g();
+            },
+            g: function() {
+                return 'G1';
+            },
+            h: function() {
+                return this.i();
+            },
+            i: function() {
+                return 'I1';
+            },
+            j: function() {
+                return 'J1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            getF: function() {
+                // invoke $super twice to detect reset
+                return this.$superProp('f')+this.$superProp('h')+this.$superProp('f');
+            },
+            g: function() {
+                return 'G2';
+            },
+            i: function() {
+                return 'I2';
+            },
+            j: function() {
+                return 'J2';
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            g: function() {
+                return 'G3';
+            },
+            i: function() {
+                return 'I3';
+            },
+            j: function() {
+                return 'J3';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            getF: function() {
+                return this.$superProp('f')+this.$superProp('h')+this.$superProp('f');
+            },
+            g: function() {
+                return this.$superProp('h')+this.$superProp('h');
+            },
+            h: function() {
+                return 'H3';
+            },
+            i: function() {
+                return this.$super.$superProp('j');
+            },
+            j: function() {
+                return 'J4';
+            },
+            a: 4
+        });
+        var C5 = C4.subClass();
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        var c5 = new C5();
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2 error').to.be.equal('G2I2G2');
+        expect(c3.getF(), 'c3 error').to.be.equal('G3I3G3');
+        expect(c4.getF(), 'c4 error').to.be.equal('F3J2F3');
+        expect(c5.getF(), 'c5 error').to.be.equal('F3J2F3');
+    });
+
+    it('Properties should be accessable', function () {
+        var C1 = Classes.createClass(function() {
+
+            expect(this.m).to.be.equal(40);
+            expect(this.$superProp('m')===undefined).to.be.true;
+
+            // and once more: to make sure the context resets:
+            expect(this.m).to.be.equal(40);
+            expect(this.$superProp('m')===undefined).to.be.true;
+
+            expect(this.f()).to.be.equal('F4');
+            expect(this.$superProp('f')===undefined).to.be.true;
+
+            // and once more: to make sure the context resets:
+            expect(this.f()).to.be.equal('F4');
+            expect(this.$superProp('f')===undefined).to.be.true;
+
+            expect(this.g()).to.be.equal('G3');
+            expect(this.$superProp('g')===undefined).to.be.true;
+
+        }, {
+            m: 10,
+            f: function() {
+                return 'F1';
+            },
+            g: function() {
+                return 'G1';
+            }
+        });
+        var C2 = C1.subClass(function() {
+            expect(this.m).to.be.equal(40);
+            expect(this.$superProp('m')).to.be.equal(10);
+            expect(this.$super.$superProp('m')===undefined).to.be.true;
+
+            expect(this.f()).to.be.equal('F4');
+            expect(this.$superProp('f')).to.be.equal('F1');
+            expect(this.$super.$superProp('f')===undefined).to.be.true;
+
+            expect(this.g()).to.be.equal('G3');
+            expect(this.$superProp('g')).to.be.equal('G1');
+            expect(this.$super.$superProp('g')===undefined).to.be.true;
+        }, {
+            m: 20,
+            f: function() {
+                return 'F2';
+            }
+        });
+        var C3 = C2.subClass(function() {
+            expect(this.m).to.be.equal(40);
+            expect(this.$superProp('m')).to.be.equal(20);
+            expect(this.$super.$superProp('m')).to.be.equal(10);
+            expect(this.$super.$super.$superProp('m')===undefined).to.be.true;
+
+            expect(this.f()).to.be.equal('F4');
+            expect(this.$superProp('f')).to.be.equal('F2');
+            expect(this.$super.$superProp('f')).to.be.equal('F1');
+            expect(this.$super.$super.$superProp('f')===undefined).to.be.true;
+
+            expect(this.g()).to.be.equal('G3');
+            expect(this.$superProp('g')).to.be.equal('G1');
+            expect(this.$super.$superProp('g')).to.be.equal('G1');
+            expect(this.$super.$super.$superProp('g')===undefined).to.be.true;
+        }, {
+            m: 30,
+            f: function() {
+                return 'F3';
+            },
+            g: function() {
+                return 'G3';
+            }
+        });
+        var C4 = C3.subClass(function() {
+            expect(this.m).to.be.equal(40);
+            expect(this.$superProp('m')).to.be.equal(30);
+            expect(this.$super.$superProp('m')).to.be.equal(20);
+            expect(this.$super.$super.$superProp('m')).to.be.equal(10);
+            expect(this.$super.$super.$super.$superProp('m')===undefined).to.be.true;
+
+            expect(this.f()).to.be.equal('F4');
+            expect(this.$superProp('f')).to.be.equal('F3');
+            expect(this.$super.$superProp('f')).to.be.equal('F2');
+            expect(this.$super.$super.$superProp('f')).to.be.equal('F1');
+            expect(this.$super.$super.$super.$superProp('f')===undefined).to.be.true;
+
+            expect(this.g()).to.be.equal('G3');
+            expect(this.$superProp('g')).to.be.equal('G3');
+            expect(this.$super.$superProp('g')).to.be.equal('G1');
+            expect(this.$super.$super.$superProp('g')).to.be.equal('G1');
+            expect(this.$super.$super.$super.$superProp('g')===undefined).to.be.true;
+        }, {
+            m: 40,
+            f: function() {
+                return 'F4';
+            }
+        });
+        var c4 = new C4();
+
+    });
+
+    it('Properties should modified well', function () {
+        var C1 = Classes.createClass(function(x) {
+            this.x = x;
+        }, {
+            f: function() {
+                this.x = 10;
+            }
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                this.x = 20;
+            }
+        });
+        var C3 = C2.subClass();
+        var C4 = C3.subClass({
+            f: function() {
+                this.x = 40;
+            }
+        });
+        var c4 = new C4(1);
+        // expect(c4.x).to.be.equal(1);
+        // c4.f();
+        // expect(c4.x).to.be.equal(40);
+        c4.$superProp('f');
+        // expect(c4.x).to.be.equal(20);
+        // c4.$super.$superProp('f');
+        // expect(c4.x).to.be.equal(20);
+        // c4.$super.$super.$superProp('f');
+        // expect(c4.x).to.be.equal(10);
+    });
+});
+
+
+describe('test $super', function () {
+
+    it('Properties should be accessable', function () {
+        var C0 = Classes.createClass({
+            f: function() {
+                return 'F0';
+            },
+            h: function() {
+                return 'H0';
+            },
+            a: 0
+        });
+        var C1 = C0.subClass({
+            f: function() {
+                return 'F1';
+            },
+            h: function() {
+                return 'H1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            h: function() {
+                return 'H2';
+            },
+            getF: function() {
+                return this.$super.$superProp('f');
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            h: function() {
+                return 'H3';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            h: function() {
+                return 'H4';
+            },
+            a: 4
+        });
+        var c0 = new C0();
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        expect(c0.getF===undefined, 'c0 error').to.be.true;
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2-error').to.be.equal('F0');
+        expect(c3.getF(), 'c3-error').to.be.equal('F0');
+        expect(c4.getF(), 'c4-error').to.be.equal('F0');
+    });
+
+    it('loop', function () {
+        var C0 = Classes.createClass({
+            f: function() {
+                return this.h();
+            },
+            h: function() {
+                return 'H0';
+            },
+            a: 0
+        });
+        var C1 = C0.subClass({
+            f: function() {
+                return 'F1';
+            },
+            h: function() {
+                return 'H1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            h: function() {
+                return 'H2';
+            },
+            getF: function() {
+                return this.$super.$superProp('f');
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            h: function() {
+                return 'H3';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            h: function() {
+                return 'H4';
+            },
+            a: 4
+        });
+        var c0 = new C0();
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        expect(c0.getF===undefined, 'c0 error').to.be.true;
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2-error').to.be.equal('H2');
+        expect(c3.getF(), 'c3-error').to.be.equal('H3');
+        expect(c4.getF(), 'c4-error').to.be.equal('H4');
+    });
+
+    it('loop double', function () {
+        var C0 = Classes.createClass({
+            f: function() {
+                return this.g();
+            },
+            g: function() {
+                return 'G0';
+            },
+            a: 0
+        });
+        var C1 = C0.subClass({
+            f: function() {
+                return 'F0';
+            },
+            g: function() {
+                return 'G1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            getF: function() {
+                return this.$super.$superProp('f');
+            },
+            g: function() {
+                return 'G2';
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            g: function() {
+                return 'G3';
+            },
+            h: function() {
+                return 'H3-final';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            getF: function() {
+                return this.$super.$superProp('f');
+            },
+            g: function() {
+                return this.$super.$superProp('h');
+            },
+            a: 4
+        });
+        var C5 = C4.subClass();
+        var c0 = new C0();
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        var c5 = new C5();
+        expect(c0.getF===undefined, 'c0 error').to.be.true;
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2 error').to.be.equal('G2');
+        expect(c3.getF(), 'c3 error').to.be.equal('G3');
+        expect(c4.getF(), 'c4 error').to.be.equal('F2');
+        expect(c5.getF(), 'c5 error').to.be.equal('F2');
+    });
+
+    it('loop with multiple check reset', function () {
+        var C0 = Classes.createClass({
+            f: function() {
+                return this.g();
+            },
+            g: function() {
+                return 'G0';
+            },
+            h: function() {
+                return this.i();
+            },
+            i: function() {
+                return 'I0';
+            },
+            j: function() {
+                return 'J0';
+            },
+            a: 0
+        });
+        var C1 = C0.subClass({
+            f: function() {
+                return 'F1';
+            },
+            g: function() {
+                return 'G1';
+            },
+            h: function() {
+                return 'H1';
+            },
+            i: function() {
+                return 'I1';
+            },
+            j: function() {
+                return 'J1';
+            },
+            a: 1
+        });
+        var C2 = C1.subClass({
+            f: function() {
+                return 'F2';
+            },
+            getF: function() {
+                // invoke $super twice to detect reset
+                return this.$super.$superProp('f')+this.$super.$superProp('h')+this.$super.$superProp('f');
+            },
+            g: function() {
+                return 'G2';
+            },
+            i: function() {
+                return 'I2';
+            },
+            j: function() {
+                return 'J2';
+            },
+            a: 2
+        });
+        var C3 = C2.subClass({
+            f: function() {
+                return 'F3';
+            },
+            g: function() {
+                return 'G3';
+            },
+            i: function() {
+                return 'I3';
+            },
+            j: function() {
+                return 'J3';
+            },
+            a: 3
+        });
+        var C4 = C3.subClass({
+            f: function() {
+                return 'F4';
+            },
+            getF: function() {
+                return this.$super.$superProp('f')+this.$super.$superProp('h')+this.$super.$superProp('f');
+            },
+            g: function() {
+                return this.$super.$superProp('h')+this.$super.$superProp('h');
+            },
+            h: function() {
+                return 'H3';
+            },
+            i: function() {
+                return this.$super.$super.$superProp('j');
+            },
+            j: function() {
+                return 'J4';
+            },
+            a: 4
+        });
+        var C5 = C4.subClass();
+        var c0 = new C0();
+        var c1 = new C1();
+        var c2 = new C2();
+        var c3 = new C3();
+        var c4 = new C4();
+        var c5 = new C5();
+        expect(c0.getF===undefined, 'c0 error').to.be.true;
+        expect(c1.getF===undefined, 'c1 error').to.be.true;
+        expect(c2.getF(), 'c2 error').to.be.equal('G2I2G2');
+        expect(c3.getF(), 'c3 error').to.be.equal('G3I3G3');
+        expect(c4.getF(), 'c4 error').to.be.equal('F2H1F2');
+        expect(c5.getF(), 'c5 error').to.be.equal('F2H1F2');
+    });
+
+});
+
+describe('remove prototypes', function () {
+
+    it('Same level', function () {
+        var C0 = Classes.createClass({
+            f: function() {
+                return 'F0';
+            },
+            g: function() {
+                return 'G0';
+            }
+        });
+        var c0 = new C0();
+        expect(c0.f===undefined).to.be.false;
+        expect(c0.g===undefined).to.be.false;
+        C0.removePrototypes('f');
+        expect(c0.f===undefined).to.be.true;
+        expect(c0.g===undefined).to.be.false;
+    });
+
+    it('Multiple levels', function () {
+        var C0 = Classes.createClass({
+            f: function() {
+                return 'F0';
+            },
+            g: function() {
+                return 'G0';
+            }
+        });
+        var C1 = C0.subClass({
+            f: function() {
+                return 'F1';
+            },
+            g: function() {
+                return 'G1';
+            }
+        });
+        var c1 = new C1();
+        expect(c1.f===undefined).to.be.false;
+        expect(c1.g===undefined).to.be.false;
+        C1.removePrototypes('f');
+        expect(c1.f===undefined).to.be.false;
+        expect(c1.g===undefined).to.be.false;
+        C0.removePrototypes('f');
+        expect(c1.f===undefined).to.be.true;
+        expect(c1.g===undefined).to.be.false;
+    });
+
+    it('Same level - array properties', function () {
+        var C0 = Classes.createClass({
+            e: function() {
+                return 'E0';
+            },
+            f: function() {
+                return 'F0';
+            },
+            g: function() {
+                return 'G0';
+            }
+        });
+        var c0 = new C0();
+        expect(c0.e===undefined).to.be.false;
+        expect(c0.f===undefined).to.be.false;
+        expect(c0.g===undefined).to.be.false;
+        C0.removePrototypes(['e', 'f']);
+        expect(c0.e===undefined).to.be.true;
+        expect(c0.f===undefined).to.be.true;
+        expect(c0.g===undefined).to.be.false;
+    });
+
+    it('Multiple levels - array properties', function () {
+        var C0 = Classes.createClass({
+            e: function() {
+                return 'E0';
+            },
+            f: function() {
+                return 'F0';
+            },
+            g: function() {
+                return 'G0';
+            }
+        });
+        var C1 = C0.subClass({
+            e: function() {
+                return 'E0';
+            },
+            f: function() {
+                return 'F1';
+            },
+            g: function() {
+                return 'G1';
+            }
+        });
+        var c1 = new C1();
+        expect(c1.e===undefined).to.be.false;
+        expect(c1.f===undefined).to.be.false;
+        expect(c1.g===undefined).to.be.false;
+        C1.removePrototypes(['e', 'f']);
+        expect(c1.e===undefined).to.be.false;
+        expect(c1.f===undefined).to.be.false;
+        expect(c1.g===undefined).to.be.false;
+        C0.removePrototypes(['e', 'f']);
+        expect(c1.e===undefined).to.be.true;
+        expect(c1.f===undefined).to.be.true;
+        expect(c1.g===undefined).to.be.false;
+    });
 
 });
