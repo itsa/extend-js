@@ -18,7 +18,7 @@
         "extend",
         "javascript"
     ],
-    "main": "js-ext.js",
+    "main": "js-ext-base.js",
     "dependencies": {
         "polyfill": "itsa/polyfill"
     },
