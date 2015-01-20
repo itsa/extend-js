@@ -21,8 +21,11 @@ var LightMap, Classes,
 
     global._ITSAmodules || Object.protectedProp(global, '_ITSAmodules', createHashMap());
 
-    if (global._ITSAmodules.LightMap) {
-        return global._ITSAmodules.LightMap; // LightMap was already created
+/*jshint boss:true */
+    if (LightMap=global._ITSAmodules.LightMap) {
+/*jshint boss:false */
+        module.exports = LightMap; // LightMap was already created
+        return;
     }
 
     require('../lib/array.js');

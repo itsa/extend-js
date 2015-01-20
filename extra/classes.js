@@ -26,8 +26,11 @@ require('../lib/object.js');
 
     global._ITSAmodules || Object.protectedProp(global, '_ITSAmodules', createHashMap());
 
-    if (global._ITSAmodules.Classes) {
-        return global._ITSAmodules.Classes; // Classes was already created
+/*jshint boss:true */
+    if (Classes=global._ITSAmodules.Classes) {
+/*jshint boss:false */
+        module.exports = Classes; // Classes was already created
+        return;
     }
 
     // Define configurable, writable and non-enumerable props
