@@ -1203,15 +1203,15 @@ describe('test $superProp', function () {
             }
         });
         var c4 = new C4(1);
-        // expect(c4.x).to.be.equal(1);
-        // c4.f();
-        // expect(c4.x).to.be.equal(40);
+        expect(c4.x).to.be.equal(1);
+        c4.f();
+        expect(c4.x).to.be.equal(40);
         c4.$superProp('f');
-        // expect(c4.x).to.be.equal(20);
-        // c4.$super.$superProp('f');
-        // expect(c4.x).to.be.equal(20);
-        // c4.$super.$super.$superProp('f');
-        // expect(c4.x).to.be.equal(10);
+        expect(c4.x).to.be.equal(20);
+        c4.$super.$superProp('f');
+        expect(c4.x).to.be.equal(20);
+        c4.$super.$super.$superProp('f');
+        expect(c4.x).to.be.equal(10);
     });
 });
 
