@@ -109,7 +109,7 @@ require('../lib/object.js');
          * @chainable
          */
         mergePrototypes: function (prototypes, force) {
-            var instance, proto, names, l, i, replaceMap, protectedMap, name, nameInProto, finalName, propDescriptor;
+            var instance, proto, names, l, i, replaceMap, protectedMap, name, nameInProto, finalName, propDescriptor, extraInfo;
             if (!prototypes) {
                 return;
             }
@@ -170,7 +170,11 @@ require('../lib/object.js');
                     }
                 }
                 else {
-                    console.warn(NAME+'mergePrototypes is not allowed to set the property: '+name);
+                    extraInfo = '';
+                    nameInProto && (extraInfo = 'property is already available (you might force it to be set)');
+                    PROTO_RESERVED_NAMES[finalName] && (extraInfo = 'property is a protected property');
+                    protectedMap[finalName] && (extraInfo = 'property is a private property');
+                    console.warn(NAME+'mergePrototypes is not allowed to set the property: '+name+' --> '+extraInfo);
                 }
             }
             return instance;
