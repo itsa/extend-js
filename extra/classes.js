@@ -304,13 +304,9 @@ require('../lib/object.js');
             proto = Object.create(baseProt);
             constructor.prototype = proto;
 
-            // webkit doesn't let all objects to have their constructor redefined:
-            try {
-                proto.constructor = constructor;
-            }
-            catch(err) {
-                console.warn('Severe error while subclassing: '+err.message);
-            }
+            // webkit doesn't let all objects to have their constructor redefined
+            // when directly assigned. Using `defineProperty will work:
+            Object.defineProperty(proto, 'constructor', {value: constructor});
 
             constructor.$$chainConstructed = chainConstruct ? true : false;
             constructor.$$super = baseProt;
