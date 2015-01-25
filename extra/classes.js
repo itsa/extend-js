@@ -6,8 +6,8 @@
  * New BSD License - http://choosealicense.com/licenses/bsd-3-clause/
  *
  * @module js-ext
- * @submodule lib/function.js
- * @class Function
+ * @submodule extra/classes.js
+ * @class Classes
  *
 */
 
@@ -33,10 +33,28 @@ require('../lib/object.js');
         return;
     }
 
-    // Define configurable, writable and non-enumerable props
-    // if they don't exist.
-
+    /**
+     * Defines whether Classes should call their constructor in a chained way top-down.
+     *
+     * @property DEFAULT_CHAIN_CONSTRUCT
+     * @default true
+     * @type Boolean
+     * @protected
+     * @since 0.0.1
+    */
     DEFAULT_CHAIN_CONSTRUCT = true;
+
+    /**
+     * Sugarmethod for Object.defineProperty creating an unenumerable property
+     *
+     * @method defineProperty
+     * @param [object] {Object} The object to define the property to
+     * @param [name] {String} name of the property
+     * @param [method] {Any} value of the property
+     * @param [force=false] {Boolean} to force assignment when the property already exists
+     * @protected
+     * @since 0.0.1
+    */
     defineProperty = function (object, name, method, force) {
         if (!force && (name in object)) {
             return;
@@ -48,6 +66,16 @@ require('../lib/object.js');
             value: method
         });
     };
+    /**
+     * Sugarmethod for using defineProperty for multiple properties at once.
+     *
+     * @method defineProperties
+     * @param [object] {Object} The object to define the property to
+     * @param [map] {Object} object to be set
+     * @param [force=false] {Boolean} to force assignment when the property already exists
+     * @protected
+     * @since 0.0.1
+    */
     defineProperties = function (object, map, force) {
         var names = Object.keys(map),
             l = names.length,
@@ -58,17 +86,58 @@ require('../lib/object.js');
             defineProperty(object, name, map[name], force);
         }
     };
+
+    /**
+     * Empty function
+     *
+     * @method NOOP
+     * @protected
+     * @since 0.0.1
+    */
     NOOP = function () {};
+
+    /**
+     * Internal hash containing the names of members which names should be transformed
+     *
+     * @property REPLACE_CLASS_METHODS
+     * @default {destroy: '_destroy'}
+     * @type Object
+     * @protected
+     * @since 0.0.1
+    */
     REPLACE_CLASS_METHODS = createHashMap({
         destroy: '_destroy'
     });
+
+    /**
+     * Internal hash containing protected members: those who cannot be merged into a Class
+     *
+     *
+     * @property PROTECTED_CLASS_METHODS
+     * @default {$super: true, $superProp: true, $orig: true}
+     * @type Object
+     * @protected
+     * @since 0.0.1
+    */
     PROTECTED_CLASS_METHODS = createHashMap({
         $super: true,
         $superProp: true,
         $orig: true
     });
+
 /*jshint proto:true */
 /* jshint -W001 */
+    /*
+     * Internal hash containing protected members: those who cannot be merged into a Class
+     *
+     * @property PROTO_RESERVED_NAMES
+     * @default {constructor: true, prototype: true, hasOwnProperty: true, isPrototypeOf: true,
+     *           propertyIsEnumerable: true, __defineGetter__: true, __defineSetter__: true,
+     *           __lookupGetter__: true, __lookupSetter__: true, __proto__: true}
+     * @type Object
+     * @protected
+     * @since 0.0.1
+    */
     PROTO_RESERVED_NAMES = createHashMap({
         constructor: true,
         prototype: true,
@@ -83,11 +152,6 @@ require('../lib/object.js');
     });
 /* jshint +W001 */
 /*jshint proto:false */
-
-    /**
-     * Pollyfils for often used functionality for Function
-     * @class Function
-    */
 
     defineProperties(Function.prototype, {
 
@@ -323,8 +387,36 @@ require('../lib/object.js');
 
     global._ITSAmodules.Classes = Classes = {};
 
+    /**
+     * Base properties for every Class
+     *
+     *
+     * @property BASE_MEMBERS
+     * @type Object
+     * @protected
+     * @since 0.0.1
+    */
     BASE_MEMBERS = {
+       /**
+        * Transformed from `destroy` --> when `destroy` gets invoked, the instance will invoke `_destroy` through the whole chain.
+        * Defaults to `NOOP`, so that it can be always be invoked.
+        *
+        * @method _destroy
+        * @private
+        * @chainable
+        * @since 0.0.1
+        */
         _destroy: NOOP,
+
+       /**
+        * Calls `_destroy` on through the class-chain on every level (bottom-up).
+        * _destroy gets defined when the itag defines `destroy` --> transformation under the hood.
+        *
+        * @method destroy
+        * @param [notChained=false] {Boolean} set this `true` to prevent calling `destroy` up through the chain
+        * @chainable
+        * @since 0.0.1
+        */
         destroy: function(notChained) {
             var instance = this,
                 superDestroy;
@@ -341,10 +433,19 @@ require('../lib/object.js');
                 superDestroy(instance.constructor);
                 Object.protectedProp(instance, '_destroyed', true);
             }
+            return instance;
         }
     };
 
     coreMethods = Classes.coreMethods = {
+        /**
+         * Returns the instance, yet sets an internal flag to a higher Class (1 level up)
+         *
+         * @property $super
+         * @chainable
+         * @for BaseClass
+         * @since 0.0.1
+        */
         $super: {
             get: function() {
                 var instance = this;
@@ -354,10 +455,18 @@ require('../lib/object.js');
                 return instance;
             }
         },
+
+        /**
+         * Calculated value of the specified member at the parent-Class.
+         *
+         * @method $superProp
+         * @return {Any}
+         * @since 0.0.1
+        */
         $superProp: {
             configurable: true,
             writable: true,
-            value: function(/* func, *args */) {
+            value: function(/* member, *args */) {
                 var instance = this,
                     classCarierReturn = instance.__$superCarierStart__ || instance.__classCarier__ || instance.__methodClassCarier__,
                     currentClassCarier = instance.__classCarier__ || instance.__methodClassCarier__,
@@ -385,6 +494,15 @@ require('../lib/object.js');
                 return returnValue || superPrototype[firstArg];
             }
         },
+
+        /**
+         * Invokes the original method (from inside where $orig is invoked).
+         * Any arguments will be passed through to the original method.
+         *
+         * @method $orig
+         * @return {Any}
+         * @since 0.0.1
+        */
         $orig: {
             configurable: true,
             writable: true,
@@ -437,20 +555,27 @@ require('../lib/object.js');
         }
     };
 
+   /**
+    * Creates the base Class: the highest Class in the hierarchy of all Classes.
+    * Will get extra properties merge into its prototype, which leads into the formation of `BaseClass`.
+    *
+    * @method createBaseClass
+    * @protected
+    * @return {Class}
+    * @for Classes
+    * @since 0.0.1
+    */
     createBaseClass = function () {
         var InitClass = function() {};
         return Function.prototype.subClass.apply(InitClass, arguments);
     };
 
     /**
-     * Returns a base class with the given constructor and prototype methods
+     * The base BaseClass: the highest Class in the hierarchy of all Classes.
      *
-     * @for Object
-     * @method createClass
-     * @param [constructor] {Function} constructor for the class
-     * @param [prototype] {Object} Hash map of prototype members of the new class
-     * @static
-     * @return {Function} the new class
+     * @property BaseClass
+     * @type Class
+     * @since 0.0.1
     */
     Object.protectedProp(Classes, 'BaseClass', createBaseClass().mergePrototypes(BASE_MEMBERS, true, {}, {}));
 
@@ -460,12 +585,10 @@ require('../lib/object.js');
     /**
      * Returns a base class with the given constructor and prototype methods
      *
-     * @for Object
      * @method createClass
      * @param [constructor] {Function} constructor for the class
      * @param [prototype] {Object} Hash map of prototype members of the new class
-     * @static
-     * @return {Function} the new class
+     * @return {Class} the new class
     */
     Object.protectedProp(Classes, 'createClass', Classes.BaseClass.subClass.bind(Classes.BaseClass));
 
