@@ -193,7 +193,7 @@ require('../lib/object.js');
                     // if nameInProto: set the property, but also backup for chaining using $$orig
                     propDescriptor = Object.getOwnPropertyDescriptor(prototypes, name);
                     if (!propDescriptor.writable) {
-                        console.warn(NAME+'mergePrototypes will set property of '+name+'without its property-descriptor: for it is an unwritable property.');
+                        console.warn(NAME+'mergePrototypes will set property of '+name+' without its property-descriptor: for it is an unwritable property.');
                         proto[finalName] = prototypes[name];
                     }
                     else {
