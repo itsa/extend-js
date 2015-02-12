@@ -61,6 +61,22 @@ describe('Testing String', function () {
         expect(' Hello World '.trimRight()).to.be.eql(' Hello World');
     });
 
+    it('String.replace', function () {
+        expect('abcABCabcABC'.replace('B', 'z')).to.be.equal('abcAzCabcABC');
+    });
+
+    it('String.replace case-insensitive', function () {
+        expect('abcABCabcABC'.replace('B', 'z', true)).to.be.equal('azcABCabcABC');
+    });
+
+    it('String.replaceAll', function () {
+        expect('abcABCabcABC'.replaceAll('B', 'z')).to.be.equal('abcAzCabcAzC');
+    });
+
+    it('String.replaceAll case-insensitive', function () {
+        expect('abcABCabcABC'.replaceAll('B', 'z', true)).to.be.equal('azcAzCazcAzC');
+    });
+
     it('String.validateEmail', function () {
         expect('a@aa.nl'.validateEmail()).to.be.true;
         expect('a@aa.n'.validateEmail()).to.be.false;
