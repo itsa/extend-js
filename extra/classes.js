@@ -360,7 +360,8 @@ require('../lib/object.js');
                     context.__classCarier__ = constructorClosure.constructor;
                     context.__origProp__ = 'constructor';
                     originalConstructor.apply(context, arguments);
-
+                    // only call aferInit on the last constructor of the chain:
+                    (constructorClosure.constructor===context.constructor) && context.afterInit();
                 };
             })(constructor);
 
@@ -407,6 +408,17 @@ require('../lib/object.js');
         * @since 0.0.1
         */
         _destroy: NOOP,
+
+       /**
+        * Transformed from `destroy` --> when `destroy` gets invoked, the instance will invoke `_destroy` through the whole chain.
+        * Defaults to `NOOP`, so that it can be always be invoked.
+        *
+        * @method afterInit
+        * @private
+        * @chainable
+        * @since 0.0.1
+        */
+        afterInit: NOOP,
 
        /**
         * Calls `_destroy` on through the class-chain on every level (bottom-up).

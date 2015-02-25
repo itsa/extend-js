@@ -592,6 +592,11 @@ describe('Testing object merge methods with descriptors', function () {
 				a.merge(obj, {force: true});
 				expect(a).be.eql(obj);
 			});
+			it('existing, replace',  function () {
+				var a = {b:42};
+				a.merge(obj, {replace: true});
+				expect(a).be.eql({b:2});
+			});
 			it('undefined source', function () {
 				var a = {b:42};
 				a.merge(undefined);
