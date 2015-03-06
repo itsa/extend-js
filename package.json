@@ -20,7 +20,8 @@
     ],
     "main": "js-ext-base.js",
     "dependencies": {
-        "polyfill": "itsa/polyfill"
+        "polyfill": "itsa/polyfill",
+        "utils": "itsa/utils"
     },
     "devDependencies": {
         "chai": "^1.9.1",
