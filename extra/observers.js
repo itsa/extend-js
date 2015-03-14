@@ -170,19 +170,15 @@ defineProperties(Object.prototype, {
             property;
         if (typeof callback==='function') {
             if (NATIVE_OBJECT_OBSERVE) {
-console.warn('going to observe object: '+JSON.stringify(obj));
                 Object.observe(obj, callback);
                 // check all properties if they are an Array or Object:
                 // in those cases, we need extra observers
                 for (property in obj) {
-console.warn('inspecting '+property);
-                    if (Object.isObject(property)) {
-console.warn(property+' is object');
-                        Object.observe(property, callback);
+                    if (Object.isObject(obj[property])) {
+                        Object.observe(obj[property], callback);
                     }
-                    else if (Array.isArray(property)) {
-console.warn(property+' is array');
-                        Array.observe(property, callback);
+                    else if (Array.isArray(obj[property])) {
+                        Array.observe(obj[property], callback);
                     }
                 }
                 // we also need to watch the object for new/replaced/removed properties ot the type Object/Array:
@@ -216,11 +212,11 @@ console.warn(property+' is array');
             if (NATIVE_OBJECT_OBSERVE) {
                 Object.unobserve(obj, callback);
                 for (property in obj) {
-                    if (Object.isObject(property)) {
-                        Object.unobserve(property, callback);
+                    if (Object.isObject(obj[property])) {
+                        Object.unobserve(obj[property], callback);
                     }
-                    else if (Array.isArray(property)) {
-                        Array.unobserve(property, callback);
+                    else if (Array.isArray(obj[property])) {
+                        Array.unobserve(obj[property], callback);
                     }
                 }
             }
@@ -248,7 +244,6 @@ defineProperties(Array.prototype, {
             item, i, len;
         if (typeof callback==='function') {
             if (NATIVE_OBJECT_OBSERVE) {
-console.warn('going to observe array: '+JSON.stringify(array));
                 Array.observe(array, callback);
                 // check all properties if they are an Array or Object:
                 // in those cases, we need extra observers
