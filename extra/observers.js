@@ -170,14 +170,18 @@ defineProperties(Object.prototype, {
             property;
         if (typeof callback==='function') {
             if (NATIVE_OBJECT_OBSERVE) {
+console.warn('going to observe object: '+JSON.stringify(obj));
                 Object.observe(obj, callback);
                 // check all properties if they are an Array or Object:
                 // in those cases, we need extra observers
                 for (property in obj) {
+console.warn('inspecting '+property);
                     if (Object.isObject(obj[property])) {
+console.warn(property+' is object');
                         Object.observe(obj[property], callback);
                     }
                     else if (Array.isArray(obj[property])) {
+console.warn(property+' is array');
                         Array.observe(obj[property], callback);
                     }
                 }
@@ -244,16 +248,20 @@ defineProperties(Array.prototype, {
             item, i, len;
         if (typeof callback==='function') {
             if (NATIVE_OBJECT_OBSERVE) {
+console.warn('going to observe array: '+JSON.stringify(array));
                 Array.observe(array, callback);
                 // check all properties if they are an Array or Object:
                 // in those cases, we need extra observers
                 len = array.length;
                 for (i=0; i<len; i++) {
                     item = array[i];
+console.warn('inspecting '+item);
                     if (Object.isObject(item)) {
+console.warn(item+' is object');
                         Object.observe(item, callback);
                     }
                     else if (Array.isArray(item)) {
+console.warn(item+' is object');
                         Array.observe(item, callback);
                     }
                 }
