@@ -75,7 +75,7 @@ var NATIVE_OBJECT_OBSERVE = !!Object.observe,
     },
 
 
-    objectStructureChanged = function(callback) {
+    structureChanged = function(callback) {
         var watcher;
         watcher = function(changes) {
             // changes is an array with objects having the following properties:
@@ -92,61 +92,14 @@ var NATIVE_OBJECT_OBSERVE = !!Object.observe,
                 property = changedProp.object[changedProp.name];
                 if (changedProp.type==='delete') {
                     // clear previous observer
-                    if (Object.isObject(property)) {
-                        Object.unobserve(property, callback);
-                    }
-                    else if (Array.isArray(property)) {
-                        Array.unobserve(property, callback);
+                    if (Object.isObject(property) || Array.isArray(property)) {
+                        property.unobserve(callback);
                     }
                 }
                 if (changedProp.type==='add') {
                     // set new observer
-                    if (Object.isObject(property)) {
-                        Object.observe(property, callback);
-                    }
-                    else if (Array.isArray(property)) {
-                        Array.observe(property, callback);
-                    }
-                }
-            }
-        };
-        return watcher;
-    },
-
-    arrayStructureChanged = function(callback) {
-        var watcher;
-        watcher = function(changes) {
-            // changes is an array with objects having the following properties:
-            // {
-            //    name: The name of the property which was changed.
-            //    object: The changed array after the change was made.
-            //    type: A string indicating the type of change taking place. One of "add", "update", "delete", or "splice".
-            //    oldValue: Only for "update" and "delete" types. The value before the change.
-            //    index: Only for the "splice" type. The index at which the change occurred.
-            //    removed: Only for the "splice" type. An array of the removed elements.
-            //    addedCount: Only for the "splice" type. The number of elements added.
-            // }
-            var len = changes.length,
-                i, changedProp, property;
-            for (i=0; i<len; i++) {
-                changedProp = changes[i];
-                property = changedProp.object[changedProp.name];
-                if (changedProp.type==='delete') {
-                    // clear previous observer
-                    if (Object.isObject(property)) {
-                        Object.unobserve(property, callback);
-                    }
-                    else if (Array.isArray(property)) {
-                        Array.unobserve(property, callback);
-                    }
-                }
-                if (changedProp.type==='add') {
-                    // set new observer
-                    if (Object.isObject(property)) {
-                        Object.observe(property, callback);
-                    }
-                    else if (Array.isArray(property)) {
-                        Array.observe(property, callback);
+                    if (Object.isObject(property) || Array.isArray(property)) {
+                        property.observe(callback);
                     }
                 }
             }
@@ -176,13 +129,9 @@ console.warn('going to observe object: '+JSON.stringify(obj));
                 // in those cases, we need extra observers
                 for (property in obj) {
 console.warn('inspecting '+property);
-                    if (Object.isObject(obj[property])) {
-console.warn(property+' is object');
-                        Object.observe(obj[property], callback);
-                    }
-                    else if (Array.isArray(obj[property])) {
-console.warn(property+' is array');
-                        Array.observe(obj[property], callback);
+                    if (Object.isObject(obj[property]) || Array.isArray(obj[property])) {
+console.warn(property+' is object or array');
+                        obj[property].observe(callback);
                     }
                 }
                 // we also need to watch the object for new/replaced/removed properties ot the type Object/Array:
@@ -190,7 +139,7 @@ console.warn(property+' is array');
                 // to register this, we add an extra observer that looks for the type of the change
 
 
-                Object.observe(obj, objectStructureChanged(callback), ['add', 'delete']);
+                Object.observe(obj, structureChanged(callback), ['add', 'delete']);
 
 
 
@@ -256,13 +205,9 @@ console.warn('going to observe array: '+JSON.stringify(array));
                 for (i=0; i<len; i++) {
                     item = array[i];
 console.warn('inspecting '+item);
-                    if (Object.isObject(item)) {
-console.warn(item+' is object');
-                        Object.observe(item, callback);
-                    }
-                    else if (Array.isArray(item)) {
-console.warn(item+' is object');
-                        Array.observe(item, callback);
+                    if (Object.isObject(item) || Array.isArray(item)) {
+console.warn(item+' is object or array');
+                        item.observe(callback);
                     }
                 }
                 // we also need to watch the object for new/replaced/removed properties ot the type Object/Array:
@@ -270,7 +215,7 @@ console.warn(item+' is object');
                 // to register this, we add an extra observer that looks for the type of the change
 
 
-                Array.observe(array, objectStructureChanged(callback));
+                Array.observe(array, structureChanged(callback));
 
 
 
