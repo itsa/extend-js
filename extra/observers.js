@@ -175,10 +175,13 @@ console.warn('going to observe object: '+JSON.stringify(obj));
                 // check all properties if they are an Array or Object:
                 // in those cases, we need extra observers
                 for (property in obj) {
+console.warn('inspecting '+property);
                     if (Object.isObject(property)) {
+console.warn(property+' is object');
                         Object.observe(property, callback);
                     }
                     else if (Array.isArray(property)) {
+console.warn(property+' is array');
                         Array.observe(property, callback);
                     }
                 }
