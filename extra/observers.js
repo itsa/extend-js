@@ -170,6 +170,7 @@ defineProperties(Object.prototype, {
             property;
         if (typeof callback==='function') {
             if (NATIVE_OBJECT_OBSERVE) {
+console.warn('going to observe object: '+JSON.stringify(obj));
                 Object.observe(obj, callback);
                 // check all properties if they are an Array or Object:
                 // in those cases, we need extra observers
@@ -244,6 +245,7 @@ defineProperties(Array.prototype, {
             item, i, len;
         if (typeof callback==='function') {
             if (NATIVE_OBJECT_OBSERVE) {
+console.warn('going to observe array: '+JSON.stringify(array));
                 Array.observe(array, callback);
                 // check all properties if they are an Array or Object:
                 // in those cases, we need extra observers
