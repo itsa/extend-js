@@ -72,6 +72,86 @@ var NATIVE_OBJECT_OBSERVE = !!Object.observe,
             currentWatcher.timer.cancel();
             _watchers.remove(currentWatcher);
         }
+    },
+
+
+    objectStructureChanged = function(callback) {
+        var watcher;
+        watcher = function(changes) {
+            // changes is an array with objects having the following properties:
+            // {
+            //    name: The name of the property which was changed.
+            //    object: The changed object after the change was made.
+            //    type: A string indicating the type of change taking place. One of "add", "update", or "delete".
+            //    oldValue: Only for "update" and "delete" types. The value before the change.
+            // }
+            var len = changes.length,
+                i, changedProp, property;
+            for (i=0; i<len; i++) {
+                changedProp = changes[i];
+                property = changedProp.object[changedProp.name];
+                if (changedProp.type==='delete') {
+                    // clear previous observer
+                    if (Object.isObject(property)) {
+                        Object.unobserve(property, callback);
+                    }
+                    else if (Array.isArray(property)) {
+                        Array.unobserve(property, callback);
+                    }
+                }
+                if (changedProp.type==='add') {
+                    // set new observer
+                    if (Object.isObject(property)) {
+                        Object.observe(property, callback);
+                    }
+                    else if (Array.isArray(property)) {
+                        Array.observe(property, callback);
+                    }
+                }
+            }
+        };
+        return watcher;
+    },
+
+    arrayStructureChanged = function(callback) {
+        var watcher;
+        watcher = function(changes) {
+            // changes is an array with objects having the following properties:
+            // {
+            //    name: The name of the property which was changed.
+            //    object: The changed array after the change was made.
+            //    type: A string indicating the type of change taking place. One of "add", "update", "delete", or "splice".
+            //    oldValue: Only for "update" and "delete" types. The value before the change.
+            //    index: Only for the "splice" type. The index at which the change occurred.
+            //    removed: Only for the "splice" type. An array of the removed elements.
+            //    addedCount: Only for the "splice" type. The number of elements added.
+            // }
+            var len = changes.length,
+                i, changedProp, property;
+            for (i=0; i<len; i++) {
+                changedProp = changes[i];
+                property = changedProp.object[changedProp.name];
+                if (changedProp.type==='delete') {
+                    // clear previous observer
+                    if (Object.isObject(property)) {
+                        Object.unobserve(property, callback);
+                    }
+                    else if (Array.isArray(property)) {
+                        Array.unobserve(property, callback);
+                    }
+                }
+                if (changedProp.type==='add') {
+                    // set new observer
+                    if (Object.isObject(property)) {
+                        Object.observe(property, callback);
+                    }
+                    else if (Array.isArray(property)) {
+                        Array.observe(property, callback);
+                    }
+                }
+            }
+        };
+        return watcher;
     };
 
 defineProperties(Object.prototype, {
@@ -101,6 +181,15 @@ defineProperties(Object.prototype, {
                         Array.observe(property, callback);
                     }
                 }
+                // we also need to watch the object for new/replaced/removed properties ot the type Object/Array:
+                // they also need to be watched/unwatched
+                // to register this, we add an extra observer that looks for the type of the change
+
+
+                Object.observe(obj, objectStructureChanged(callback), ['add', 'delete']);
+
+
+
             }
             else {
                 watchObject(obj, callback);
@@ -168,6 +257,15 @@ defineProperties(Array.prototype, {
                         Array.observe(item, callback);
                     }
                 }
+                // we also need to watch the object for new/replaced/removed properties ot the type Object/Array:
+                // they also need to be watched/unwatched
+                // to register this, we add an extra observer that looks for the type of the change
+
+
+                Array.observe(array, objectStructureChanged(callback));
+
+
+
             }
             else {
                 watchObject(array, callback);
