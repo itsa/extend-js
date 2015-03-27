@@ -85,4 +85,10 @@ describe('Testing Array', function () {
         expect(b===cloned).to.be.false;
     });
 
+    it('sameValue', function () {
+        var c = [item1, item2, item3, item4, item5];
+        expect(c.sameValue(b)).to.be.true;
+        expect(c.sameValue(a)).to.be.false;
+    });
+
 });
