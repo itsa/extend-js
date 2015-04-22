@@ -4,3 +4,4 @@ require('./lib/string.js');
 require('./lib/array.js');
 require('./lib/json.js');
 require('./lib/promise.js');
+require('./lib/math.js');
