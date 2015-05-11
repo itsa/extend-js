@@ -42,6 +42,37 @@ describe('Testing Array', function () {
         expect(a.toString()).to.be.eql('1,2,3,4,5,8');
     });
 
+    it('Array.insertAt', function () {
+        var newItem = {value: 99};
+        b.insertAt(newItem, 1);
+        expect(b.length).to.be.eql(6);
+        expect(b).to.be.eql([item1, newItem, item2, item3, item4, item5]);
+    });
+
+    it('Array.insertAt - already available', function () {
+        b.insertAt(item4, 1);
+        expect(b.length).to.be.eql(5);
+        expect(b).to.be.eql([item1, item4, item2, item3, item5]);
+    });
+
+    it('Array.insertAt - already available same position', function () {
+        b.insertAt(item4, 3);
+        expect(b.length).to.be.eql(5);
+        expect(b).to.be.eql([item1, item2, item3, item4, item5]);
+    });
+
+    it('Array.insertAt - duplicate already available', function () {
+        b.insertAt(item4, 1, true);
+        expect(b.length).to.be.eql(6);
+        expect(b).to.be.eql([item1, item4, item2, item3, item4, item5]);
+    });
+
+    it('Array.insertAt - duplicate already available same position', function () {
+        b.insertAt(item4, 3, true);
+        expect(b.length).to.be.eql(6);
+        expect(b).to.be.eql([item1, item2, item3, item4, item4, item5]);
+    });
+
     it('Array.shuffle', function () {
         var aBefore = a.toString(),
             bBefore = b.toString();
