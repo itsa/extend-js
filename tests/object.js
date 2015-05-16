@@ -58,6 +58,10 @@ describe('Testing isObject', function () {
 		expect(Object.isObject(undefined)).to.be.false;
 	});
 
+	it('Promise', function () {
+		expect(Object.isObject(Promise.resolve())).to.be.false;
+	});
+
 });
 
 describe('Testing object instance methods', function () {
