@@ -20,19 +20,7 @@ describe('Testing JSON', function () {
         expect(JSON.parseWithDate(objStringified)).to.be.eql(obj);
     });
 
-    it('JSON.stringifyEscaped', function () {
-        var date = new Date(1995, 11, 17, 3, 24, 0),
-            obj = {
-                a: true,
-                b: date,
-                c: "hello 'world'",
-                d: "hello \'world\'",
-                e: 10.5
-            };
-        expect(JSON.stringifyEscaped(obj)).to.be.eql('{"a":true,"b":"1995-12-17T02:24:00.000Z","c":"hello \'world\'","d":"hello \'world\'","e":10.5}');
-    });
-
-    it('JSON.parseEscaped with date', function () {
+    it('JSON.stringToDates non-cloned', function () {
         var date = new Date(1995, 11, 17, 3, 24, 0),
             obj = {
                 a: true,
@@ -41,8 +29,86 @@ describe('Testing JSON', function () {
                 d: "hello \'world\'",
                 e: 10.5
             },
-            objStringified = JSON.stringifyEscaped(obj);
-        expect(JSON.parseEscaped(objStringified, true)).to.be.eql(obj);
+            objStringified = JSON.stringify(obj),
+            objReversed = JSON.parse(objStringified),
+            manipulated = JSON.stringToDates(objReversed);
+        expect(manipulated).to.be.eql(obj); // same object
+        expect(manipulated===objReversed).to.be.true;
+    });
+
+    it('JSON.stringToDates cloned', function () {
+        var date = new Date(1995, 11, 17, 3, 24, 0),
+            obj = {
+                a: true,
+                b: date,
+                c: "hello 'world'",
+                d: "hello \'world\'",
+                e: 10.5
+            },
+            objStringified = JSON.stringify(obj),
+            objReversed = JSON.parse(objStringified),
+            manipulated = JSON.stringToDates(objReversed, true);
+        expect(manipulated).to.be.eql(obj); // same object
+        expect(manipulated===objReversed).to.be.false;
+    });
+
+
+    it('JSON.stringToDates deep object non-cloned', function () {
+        var date = new Date(1995, 11, 17, 3, 24, 0),
+            obj = {
+                a: true,
+                b: {
+                    a: {
+                        b: date
+                    },
+                    b: [
+                        date,
+                        {
+                            a: date
+                        },
+                        [
+                            date
+                        ]
+                    ]
+                },
+                c: "hello 'world'",
+                d: "hello \'world\'",
+                e: 10.5
+            },
+            objStringified = JSON.stringify(obj),
+            objReversed = JSON.parse(objStringified),
+            manipulated = JSON.stringToDates(objReversed);
+        expect(manipulated).to.be.eql(obj); // same object
+        expect(manipulated===objReversed).to.be.true;
+    });
+
+    it('JSON.stringToDates deep object cloned', function () {
+        var date = new Date(1995, 11, 17, 3, 24, 0),
+            obj = {
+                a: true,
+                b: {
+                    a: {
+                        b: date
+                    },
+                    b: [
+                        date,
+                        {
+                            a: date
+                        },
+                        [
+                            date
+                        ]
+                    ]
+                },
+                c: "hello 'world'",
+                d: "hello \'world\'",
+                e: 10.5
+            },
+            objStringified = JSON.stringify(obj),
+            objReversed = JSON.parse(objStringified),
+            manipulated = JSON.stringToDates(objReversed, true);
+        expect(manipulated).to.be.eql(obj); // same object
+        expect(manipulated===objReversed).to.be.false;
     });
 
 });
