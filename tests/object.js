@@ -64,6 +64,69 @@ describe('Testing isObject', function () {
 
 });
 
+describe('Testing newProto', function () {
+
+	it('new prototype', function () {
+		var a = {
+				b: 10
+			},
+			proto = {
+				c: 20
+			},
+			newObj;
+		newObj = Object.newProto(a, proto);
+		expect(newObj.b).to.be.eql(10);
+		expect(newObj.c).to.be.eql(20);
+	});
+
+	it('no inteference prototypes', function () {
+		var a = {
+				b: 10
+			},
+			proto = {
+				c: 20
+			},
+			newObj1, newObj2;
+		newObj1 = Object.newProto(a, proto);
+		newObj2 = Object.newProto(a, proto);
+		newObj1.b = 15;
+		expect(newObj1.b).to.be.eql(15);
+		expect(newObj1.c).to.be.eql(20);
+		expect(newObj2.b).to.be.eql(10);
+		expect(newObj2.c).to.be.eql(20);
+		proto.c = 25;
+		expect(newObj1.c).to.be.eql(25);
+		expect(newObj2.c).to.be.eql(25);
+	});
+
+	it('check merge', function () {
+		var a = {
+				b: [10]
+			},
+			proto = {
+				c: 20
+			},
+			newObj;
+		newObj = Object.newProto(a, proto);
+		a.b[0] = 15;
+		expect(newObj.b[0]).to.be.eql(15);
+	});
+
+	it('check clone', function () {
+		var a = {
+				b: [10]
+			},
+			proto = {
+				c: 20
+			},
+			newObj;
+		newObj = Object.newProto(a, proto, true);
+		a.b[0] = 15;
+		expect(newObj.b[0]).to.be.eql(10);
+	});
+
+});
+
 describe('Testing object instance methods', function () {
 	var obj = {a:1, b:2, c:3},
 	    deepObj = {
@@ -210,6 +273,32 @@ describe('Testing object instance methods', function () {
 		expect(a.f).be.equal(4);
 		expect(deepObj.f).be.equal('ITSA');
 	});
+
+	it('empty', function () {
+		var obj = {a:1,b:2,c:3};
+		obj.empty();
+		expect(obj.keys()).be.eql([]);
+	});
+
+	describe('defineData', function () {
+		it('new data', function () {
+			var obj = {a:1,b:2,c:3},
+			    newObj = {d:4,e:[5]};
+			obj.defineData(newObj);
+			newObj.e[1] = 6;
+			expect(obj).be.eql(newObj);
+			expect(obj===newObj).to.be.false;
+		});
+		it('new data cloned', function () {
+			var obj = {a:1,b:2,c:3},
+			    newObj = {d:4,e:[5]};
+			obj.defineData(newObj, true);
+			newObj.e[1] = 6;
+			expect(obj).not.be.eql(newObj);
+			expect(obj===newObj).to.be.false;
+		});
+	});
+
 	describe('merge', function () {
 		it('simple', function () {
 			var a = {};
@@ -244,6 +333,7 @@ describe('Testing object instance methods', function () {
 			expect(Object.merge(undefined,{a:1,b:2})).be.eql({a:1,b:2});
 		});
 	});
+
 });
 
 describe('Testing object merge methods with descriptors', function () {

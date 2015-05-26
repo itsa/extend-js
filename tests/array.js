@@ -122,4 +122,29 @@ describe('Testing Array', function () {
         expect(c.sameValue(a)).to.be.false;
     });
 
+    it('empty', function () {
+        var c = [1, 2, 3];
+        c.empty();
+        expect(c).be.eql([]);
+    });
+
+    describe('defineData', function () {
+        it('new data', function () {
+            var array = [1, 2, 3],
+                newArray = [4, [5]];
+            array.defineData(newArray);
+            newArray[1][0] = 6;
+            expect(array).be.eql(newArray);
+            expect(array===newArray).to.be.false;
+        });
+        it('new data cloned', function () {
+            var array = [1, 2, 3],
+                newArray = [4, [5]];
+            array.defineData(newArray, true);
+            newArray[1][0] = 6;
+            expect(array).not.be.eql(newArray);
+            expect(array===newArray).to.be.false;
+        });
+    });
+
 });
