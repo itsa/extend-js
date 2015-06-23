@@ -68,15 +68,18 @@ describe('Testing newProto', function () {
 
 	it('new prototype', function () {
 		var a = {
-				b: 10
+				b: 10,
+				d: 15
 			},
 			proto = {
-				c: 20
+				c: 20,
+				d: 25
 			},
 			newObj;
 		newObj = Object.newProto(a, proto);
 		expect(newObj.b).to.be.eql(10);
 		expect(newObj.c).to.be.eql(20);
+		expect(newObj.d).to.be.eql(15);
 	});
 
 	it('no inteference prototypes', function () {
