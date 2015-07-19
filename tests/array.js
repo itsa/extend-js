@@ -147,4 +147,51 @@ describe('Testing Array', function () {
         });
     });
 
+    describe('merge', function () {
+        it('append without cloning', function () {
+            var array = [1, 2, 3],
+                newArray = [4, [5]];
+            array.merge(newArray);
+            newArray[1][0] = 6;
+            expect(array.length).be.eql(5);
+            expect(newArray.length).be.eql(2);
+            expect(array[0]).be.eql(1);
+            expect(array[4][0]).be.eql(6);
+            expect(newArray[1][0]).be.eql(6);
+        });
+        it('append with cloning', function () {
+            var array = [1, 2, 3],
+                newArray = [4, [5]];
+            array.merge(newArray, false, true);
+            newArray[1][0] = 6;
+            expect(array.length).be.eql(5);
+            expect(newArray.length).be.eql(2);
+            expect(array[0]).be.eql(1);
+            expect(array[4][0]).be.eql(5);
+            expect(newArray[1][0]).be.eql(6);
+        });
+        it('prepend without cloning', function () {
+            var array = [1, 2, 3],
+                newArray = [4, [5]];
+            array.merge(newArray, true);
+            newArray[1][0] = 6;
+            expect(array.length).be.eql(5);
+            expect(newArray.length).be.eql(2);
+            expect(array[0]).be.eql(4);
+            expect(array[1][0]).be.eql(6);
+            expect(newArray[1][0]).be.eql(6);
+        });
+        it('prepend with cloning', function () {
+            var array = [1, 2, 3],
+                newArray = [4, [5]];
+            array.merge(newArray, true, true);
+            newArray[1][0] = 6;
+            expect(array.length).be.eql(5);
+            expect(newArray.length).be.eql(2);
+            expect(array[0]).be.eql(4);
+            expect(array[1][0]).be.eql(5);
+            expect(newArray[1][0]).be.eql(6);
+        });
+    });
+
 });
