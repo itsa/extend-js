@@ -147,11 +147,11 @@ describe('Testing Array', function () {
         });
     });
 
-    describe('merge', function () {
+    describe('concatMerge', function () {
         it('append without cloning', function () {
             var array = [1, 2, 3],
                 newArray = [4, [5]];
-            array.merge(newArray);
+            array.concatMerge(newArray);
             newArray[1][0] = 6;
             expect(array.length).be.eql(5);
             expect(newArray.length).be.eql(2);
@@ -162,7 +162,7 @@ describe('Testing Array', function () {
         it('append with cloning', function () {
             var array = [1, 2, 3],
                 newArray = [4, [5]];
-            array.merge(newArray, false, true);
+            array.concatMerge(newArray, false, true);
             newArray[1][0] = 6;
             expect(array.length).be.eql(5);
             expect(newArray.length).be.eql(2);
@@ -173,7 +173,7 @@ describe('Testing Array', function () {
         it('prepend without cloning', function () {
             var array = [1, 2, 3],
                 newArray = [4, [5]];
-            array.merge(newArray, true);
+            array.concatMerge(newArray, true);
             newArray[1][0] = 6;
             expect(array.length).be.eql(5);
             expect(newArray.length).be.eql(2);
@@ -184,7 +184,7 @@ describe('Testing Array', function () {
         it('prepend with cloning', function () {
             var array = [1, 2, 3],
                 newArray = [4, [5]];
-            array.merge(newArray, true, true);
+            array.concatMerge(newArray, true, true);
             newArray[1][0] = 6;
             expect(array.length).be.eql(5);
             expect(newArray.length).be.eql(2);
