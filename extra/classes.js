@@ -449,6 +449,7 @@ require('../lib/object.js');
                     }
                 };
                 // instance.detachAll();  <-- is what Event will add
+                // instance.undefAllEvents();  <-- is what Event will add
                 superDestroy(instance.constructor);
                 Object.protectedProp(instance, '_destroyed', true);
             }

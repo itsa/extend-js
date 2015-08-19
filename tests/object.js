@@ -1,4 +1,4 @@
-/*global describe, it */
+/*global describe, it, Blob */
 /*jshint unused:false */
 
 "use strict";
@@ -60,6 +60,10 @@ describe('Testing isObject', function () {
 
 	it('Promise', function () {
 		expect(Object.isObject(Promise.resolve())).to.be.false;
+	});
+
+	it('Blob', function () {
+		expect(Object.isObject(new Blob(['foo', 'bar']))).to.be.false;
 	});
 
 });
@@ -275,6 +279,13 @@ describe('Testing object instance methods', function () {
 		a.f = 4;
 		expect(a.f).be.equal(4);
 		expect(deepObj.f).be.equal('ITSA');
+
+		a.h = 10;
+		expect(deepObj.h===undefined).to.be.true;
+
+		deepObj.i = 10;
+		expect(a.i===undefined).to.be.true;
+		delete deepObj.i;
 	});
 
 	it('empty', function () {
