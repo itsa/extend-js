@@ -122,9 +122,9 @@ describe('Testing Array', function () {
         expect(c.sameValue(a)).to.be.false;
     });
 
-    it('empty', function () {
+    it('emptyArray', function () {
         var c = [1, 2, 3];
-        c.empty();
+        c.emptyArray();
         expect(c).be.eql([]);
     });
 

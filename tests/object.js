@@ -288,9 +288,9 @@ describe('Testing object instance methods', function () {
 		delete deepObj.i;
 	});
 
-	it('empty', function () {
+	it('emptyObject', function () {
 		var obj = {a:1,b:2,c:3};
-		obj.empty();
+		obj.emptyObject();
 		expect(obj.keys()).be.eql([]);
 	});
 
