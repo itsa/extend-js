@@ -224,14 +224,14 @@ describe('Testing object instance methods', function () {
 		deepObj2.d.d1 = 2;
 		expect(deepObj.sameValue(deepObj2)).to.be.false;
 	});
-	it('map', function () {
-		expect(obj.map(function (value, key) {
-			return key + value;
-		})).be.eql({a:'a1',b:'b2',c:'c3'});
-		expect(obj.map(function (value, key) {
-			return (key == 'b'?undefined:key + value);
-		})).be.eql({a:'a1', c:'c3'});
-	});
+	// it('map', function () {
+	// 	expect(obj.map(function (value, key) {
+	// 		return key + value;
+	// 	})).be.eql({a:'a1',b:'b2',c:'c3'});
+	// 	expect(obj.map(function (value, key) {
+	// 		return (key == 'b'?undefined:key + value);
+	// 	})).be.eql({a:'a1', c:'c3'});
+	// });
 	it('shallowClone', function () {
 		var a = obj.shallowClone();
 		expect(a).be.eql(obj);
